@@ -1,5 +1,5 @@
 {
-  "name": "wechat-insight",
+  "name": "chatsight",
   "version": "0.1.0",
   "description": "微信聊天记录分析工具，支持 AI 智能摘要",
   "main": "dist-electron/main.js",

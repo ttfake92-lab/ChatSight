@@ -19,7 +19,7 @@
 ## 文件结构概览
 
 ```
-wechat-insight/
+chatsight/
 ├── electron/
 │   ├── main.ts              # Electron 主进程
 │   ├── preload.ts           # 预加载脚本（安全桥接）
@@ -72,7 +72,7 @@ wechat-insight/
 
 ```json
 {
-  "name": "wechat-insight",
+  "name": "chatsight",
   "version": "1.0.0",
   "description": "AI-Powered WeChat Intelligence - 微信群消息智能分析桌面端",
   "main": "dist-electron/main.js",
@@ -111,7 +111,7 @@ wechat-insight/
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "ai.wesight.wechat-insight",
+    "appId": "ai.wesight.chatsight",
     "productName": "Wechat-Insight",
     "directories": {
       "output": "release"
@@ -224,7 +224,7 @@ export default defineConfig({
 
 ```json
 {
-  "appId": "ai.wesight.wechat-insight",
+  "appId": "ai.wesight.chatsight",
   "productName": "Wechat-Insight",
   "directories": {
     "output": "release"
@@ -1159,7 +1159,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   setConfigured: (configured) => set({ isConfigured: configured }),
 
   loadConfig: () => {
-    const saved = localStorage.getItem('wechat-insight-config')
+    const saved = localStorage.getItem('chatsight-config')
     if (saved) {
       try {
         const config = JSON.parse(saved)
@@ -1175,7 +1175,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
 
   saveConfig: () => {
     const { aiConfig } = get()
-    localStorage.setItem('wechat-insight-config', JSON.stringify(aiConfig))
+    localStorage.setItem('chatsight-config', JSON.stringify(aiConfig))
     set({ isConfigured: !!aiConfig.apiKey })
   },
 }))
@@ -2673,7 +2673,7 @@ git commit -m "feat: 完成第一阶段 MVP 开发"
 
 ---
 
-**计划完成！文件已保存至 `docs/superpowers/plans/2026-05-10-wechat-insight-implementation.md`**
+**计划完成！文件已保存至 `docs/superpowers/plans/2026-05-10-chatsight-implementation.md`**
 
 **两种执行方式：**
 

@@ -1,6 +1,6 @@
 {
-  "appId": "com.wechat-insight.app",
-  "productName": "Wechat Insight",
+  "appId": "com.chatsight.app",
+  "productName": "ChatSight",
   "directories": {
     "output": "release",
     "buildResources": "build"

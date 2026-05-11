@@ -167,7 +167,7 @@ def test_api_availability():
     return bool(openai_key or anthropic_key)
 
 if __name__ == '__main__':
-    print("\n🔍 Wechat-Insight 诊断测试\n")
+    print("\n🔍 ChatSight 诊断测试\n")
 
     results = {
         'sessions': test_wechat_sessions(),

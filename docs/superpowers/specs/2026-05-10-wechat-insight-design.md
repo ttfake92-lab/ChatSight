@@ -266,7 +266,7 @@ actions:
 ## 4. 项目结构
 
 ```
-wechat-insight/
+chatsight/
 ├── electron/
 │   ├── main.ts              # Electron 主进程
 │   ├── preload.ts           # 预加载脚本（安全桥接）

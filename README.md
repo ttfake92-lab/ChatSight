@@ -1,4 +1,4 @@
-# Wechat Insight
+# ChatSight
 
 微信聊天记录分析工具，支持 AI 智能摘要
 
@@ -18,33 +18,84 @@
 
 ### 方式一：直接下载（推荐）
 
-1. 从 [Releases](https://github.com/ttfake92-lab/Wechat-insight/releases) 页面下载最新版本
-2. 解压并运行 `Wechat Insight.app`
+1. 从 [Releases](https://github.com/ttfake92-lab/ChatSight/releases) 页面下载最新版本
+2. 解压 `ChatSight-0.1.0-x64.zip`
+3. 双击运行 `ChatSight.app`
 
-### 方式二：从源码构建
+### 方式二：Homebrew 安装
+
+```bash
+# 添加 Tap（如果有）
+brew tap ttfake92-lab/tap
+
+# 安装
+brew install --cask chatsight
+```
+
+### 方式三：使用 GitHub CLI
+
+```bash
+# 安装 GitHub CLI（如果未安装）
+brew install gh
+
+# 授权登录
+gh auth login
+
+# 下载最新 Release
+gh release download v0.1.0 -p '*.zip'
+
+# 解压并安装
+unzip "ChatSight-*-x64.zip"
+open "ChatSight.app"
+```
+
+### 方式四：从源码构建
+
+#### 前置要求
+- Node.js 18+
+- npm 9+
+- Xcode Command Line Tools
+
+#### 构建步骤
 
 ```bash
 # 克隆仓库
-git clone https://github.com/ttfake92-lab/Wechat-insight.git
-cd Wechat-insight
+git clone https://github.com/ttfake92-lab/ChatSight.git
+cd ChatSight
 
 # 安装依赖
 npm install
 
-# 开发模式运行
+# 开发模式运行（调试用）
 npm run electron:dev
 
 # 构建 macOS 应用
 npm run electron:build
+
+# 或者构建安装包（DMG）
+npm run electron:build -- --mac dmg
 ```
 
-构建完成后，应用位于 `release/mac/` 目录
+构建完成后：
+- 应用位于 `release/mac/ChatSight.app`
+- DMG 安装包位于 `release/ChatSight-*-x64.dmg`
+- ZIP 压缩包位于 `release/ChatSight-*-x64.zip`
+
+### 方式五：仅构建 ZIP（不生成 DMG）
+
+如果只需要 ZIP 压缩包：
+
+```bash
+npm run electron:build -- --mac zip
+```
+
+构建产物会输出到 `release/` 目录
 
 ## 前置要求
 
 ### 安装 wechat-cli
 
-Wechat Insight 需要依赖 [wechat-cli](https://github.com/wechat-cli/wechat-cli) 来读取微信数据。
+ChatSight 需要依赖 [wechat-cli](https://github.com/wechat-cli/wechat-cli) 来读取微信数据。
 
 ```bash
 # 使用 npm 安装
@@ -63,7 +114,7 @@ wechat-cli init
 
 ### 1. 启动应用
 
-运行 `Wechat Insight.app`，首次启动会显示主界面。
+运行 `ChatSight.app`，首次启动会显示主界面。
 
 ### 2. 配置 AI 服务（可选）
 
@@ -123,7 +174,7 @@ VITE_DEFAULT_MODEL=MiniMax-M2.7-highspeed
 
 ### Q: 提示"Electron API 未初始化"
 
-这是因为你在浏览器中直接打开了网页。Wechat Insight 需要在 Electron 环境中运行。请下载编译好的应用，或使用 `npm run electron:dev` 启动。
+这是因为你在浏览器中直接打开了网页。ChatSight 需要在 Electron 环境中运行。请下载编译好的应用，或使用 `npm run electron:dev` 启动。
 
 ### Q: 无法加载会话列表
 
