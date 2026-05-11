@@ -47,7 +47,7 @@ export interface AISummary {
   }[]
 }
 
-export type AIProvider = 'openai' | 'claude' | 'local'
+export type AIProvider = 'openai' | 'claude' | 'local' | 'minimax'
 
 export interface AIConfig {
   provider: AIProvider

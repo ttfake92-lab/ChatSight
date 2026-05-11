@@ -34,15 +34,24 @@ export const useSessionStore = create<SessionState>((set) => ({
 
   fetchSessions: async (limit?: number) => {
     set({ isLoading: true, error: null })
+    
+    if (!window.electronAPI || !window.electronAPI.wechat) {
+      set({ error: 'Electron API 未初始化，请确保在 Electron 环境中运行', isLoading: false })
+      return
+    }
+    
     try {
       const result = await window.electronAPI.wechat.getSessions(limit)
+      
       const sessions: Session[] = Array.isArray(result) 
         ? result 
         : (result && typeof result === 'object' && 'sessions' in result) 
           ? (result as { sessions: Session[] }).sessions 
           : []
+      
       set({ sessions, isLoading: false })
     } catch (err) {
+      console.error('获取会话列表失败:', err)
       const error = err instanceof Error ? err.message : '获取会话列表失败'
       set({ error, isLoading: false })
     }

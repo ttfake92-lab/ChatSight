@@ -41,6 +41,8 @@ class AIService {
       response = await this.callOpenAI(prompt)
     } else if (this.config.provider === 'claude') {
       response = await this.callClaude(prompt)
+    } else if (this.config.provider === 'minimax') {
+      response = await this.callMiniMax(prompt)
     } else {
       throw {
         code: 'INVALID_KEY' as const,
@@ -171,6 +173,71 @@ class AIService {
 
       const data = await response.json()
       return data.content[0]?.text || ''
+    } catch (error) {
+      if (this.isAIError(error)) {
+        throw error
+      }
+      throw {
+        code: 'NETWORK_ERROR' as const,
+        message: error instanceof Error ? error.message : '网络请求失败'
+      }
+    }
+  }
+
+  private async callMiniMax(prompt: string): Promise<string> {
+    if (!this.config) {
+      throw {
+        code: 'INVALID_KEY' as const,
+        message: 'AI 配置未设置'
+      }
+    }
+
+    const model = this.config.model || 'MiniMax-M2.7-highspeed'
+    const baseUrl = this.config.baseUrl || 'https://api.minimaxi.com/v1'
+
+    try {
+      const response = await fetch(`${baseUrl}/text/chatcompletion_v2`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        
+        if (response.status === 401 || response.status === 403) {
+          throw {
+            code: 'INVALID_KEY' as const,
+            message: 'API Key 无效或已过期'
+          }
+        } else if (response.status === 429) {
+          throw {
+            code: 'RATE_LIMIT' as const,
+            message: '请求过于频繁，请稍后重试'
+          }
+        } else {
+          throw {
+            code: 'NETWORK_ERROR' as const,
+            message: errorData.error?.message || `请求失败: ${response.status}`
+          }
+        }
+      }
+
+      const data = await response.json()
+      return data.choices?.[0]?.message?.content || data.choices?.[0]?.text || ''
     } catch (error) {
       if (this.isAIError(error)) {
         throw error

@@ -60,7 +60,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(aiConfig))
       set({ isConfigured: true })
     } catch (err) {
-      console.error('保存配置失败:', err)
+      console.error('保存配置失败')
     }
   },
 }))

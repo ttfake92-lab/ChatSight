@@ -4,15 +4,31 @@ export class WeChatParser {
   parseSessions(output: string): Session[] {
     try {
       const data = JSON.parse(output)
+      
       if (Array.isArray(data)) {
         return data.map((item: any, index: number) => ({
-          id: item.id || String(index),
-          name: item.name || item.userName || '',
-          type: item.type || (item.isGroup ? 'group' : 'private'),
-          lastMessage: item.lastMessage || item.content || '',
-          lastMessageTime: item.lastMessageTime || item.createTime || '',
-          unreadCount: item.unreadCount || 0
+          id: item.username || item.userName || String(index),
+          name: item.chat || item.name || item.userName || '',
+          type: item.is_group ? 'group' : 'private',
+          lastMessage: item.last_message || item.lastMessage || '',
+          lastMessageTime: item.timestamp ? new Date(item.timestamp * 1000).toISOString() : (item.time || ''),
+          unreadCount: item.unread || item.unreadCount || 0
         }))
+      }
+      
+      if (data && typeof data === 'object') {
+        const sessions = data.sessions || data.chats || data.list || []
+        
+        if (Array.isArray(sessions)) {
+          return sessions.map((item: any, index: number) => ({
+            id: item.username || item.userName || String(index),
+            name: item.chat || item.name || item.userName || '',
+            type: item.is_group ? 'group' : 'private',
+            lastMessage: item.last_message || item.lastMessage || '',
+            lastMessageTime: item.timestamp ? new Date(item.timestamp * 1000).toISOString() : (item.time || ''),
+            unreadCount: item.unread || item.unreadCount || 0
+          }))
+        }
       }
     } catch {
       return this.parseSessionsFromText(output)
@@ -43,6 +59,7 @@ export class WeChatParser {
   parseHistory(output: string): Message[] {
     try {
       const data = JSON.parse(output)
+      
       if (Array.isArray(data)) {
         return data.map((item: any) => ({
           id: item.id || this.generateId(),
@@ -52,7 +69,46 @@ export class WeChatParser {
           isSelf: item.isSelf || item.from === 'self' || false
         }))
       }
-    } catch {
+      
+      if (data && typeof data === 'object') {
+        const messages = data.messages || data.msg_list || data.records || []
+        
+        if (Array.isArray(messages) && messages.length > 0) {
+          const firstMsg = messages[0]
+          
+          if (typeof firstMsg === 'string') {
+            return messages.map((msg: string, index: number) => {
+              const match = msg.match(/^\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})\]\s*(.+?):\s*(.+)$/)
+              if (match) {
+                return {
+                  id: `msg_${index}_${Date.now()}`,
+                  sender: match[2],
+                  content: match[3],
+                  timestamp: match[1],
+                  isSelf: match[2].toLowerCase().includes('self') || match[2].includes('我')
+                }
+              }
+              return {
+                id: `msg_${index}_${Date.now()}`,
+                sender: '未知',
+                content: msg,
+                timestamp: new Date().toISOString(),
+                isSelf: false
+              }
+            })
+          } else {
+            return messages.map((item: any) => ({
+              id: item.id || item.msgId || this.generateId(),
+              sender: item.sender || item.from || item.nickname || item.user || '',
+              content: item.content || item.text || item.message || '',
+              timestamp: item.timestamp ? new Date(item.timestamp * 1000).toISOString() : (item.createTime ? new Date(item.createTime * 1000).toISOString() : new Date().toISOString()),
+              isSelf: item.isSelf || item.from === 'self' || item.sender === 'self' || false
+            }))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('解析 JSON 失败')
       return this.parseHistoryFromText(output)
     }
     return []

@@ -31,8 +31,15 @@ export function AISummary() {
   const [error, setError] = useState<string | null>(null)
 
   const handleGenerateSummary = async () => {
+    // 检查是否有消息
     if (messages.length === 0) {
       setError('没有可分析的聊天记录')
+      return
+    }
+
+    // 检查 AI 配置
+    if (!aiConfig.apiKey || aiConfig.apiKey.trim() === '') {
+      setError('请先配置 AI API Key：点击右上角设置按钮，填入你的 API Key')
       return
     }
 
@@ -45,7 +52,18 @@ export function AISummary() {
       setSummary(result)
     } catch (err) {
       const aiError = err as AIError
-      setError(aiError.message || '生成摘要失败，请重试')
+      const errorMessage = aiError.message || '生成摘要失败，请重试'
+
+      // 提供更友好的错误提示
+      if (errorMessage.includes('API Key 无效') || errorMessage.includes('INVALID_KEY')) {
+        setError('API Key 无效或已过期，请在设置中更新')
+      } else if (errorMessage.includes('RATE_LIMIT')) {
+        setError('请求过于频繁，请稍后重试')
+      } else if (errorMessage.includes('网络')) {
+        setError('网络连接失败，请检查网络')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -153,6 +171,10 @@ export function AISummary() {
   }
 
   if (!summary) {
+    const hasMessages = messages.length > 0
+    const hasApiKey = aiConfig.apiKey && aiConfig.apiKey.trim() !== ''
+    const isDisabled = !hasMessages || !hasApiKey
+
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <Sparkles className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -160,13 +182,22 @@ export function AISummary() {
         <p className="text-sm text-muted-foreground mb-6 max-w-sm">
           选择一个会话，AI 将为你分析聊天内容，生成结构化的摘要和洞察
         </p>
-        <Button onClick={handleGenerateSummary} disabled={messages.length === 0}>
+        <Button
+          onClick={handleGenerateSummary}
+          disabled={isDisabled}
+          className={!hasApiKey ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+        >
           <Sparkles className="h-4 w-4 mr-2" />
-          生成摘要
+          {hasApiKey ? '生成摘要' : '请先配置 API Key'}
         </Button>
-        {messages.length === 0 && (
+        {!hasMessages && hasApiKey && (
           <p className="text-xs text-muted-foreground mt-2">
             请先选择一个会话
+          </p>
+        )}
+        {!hasApiKey && (
+          <p className="text-xs text-yellow-600 mt-2">
+            点击右上角 ⚙️ 设置，配置 AI API Key
           </p>
         )}
       </div>

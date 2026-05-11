@@ -39,7 +39,8 @@ export class WeChatExecutor {
     this.ensureInitialized()
     try {
       const output = await this.executeCommand(['history', sessionName, '--limit', String(limit)])
-      return this.parser.parseHistory(output)
+      const result = this.parser.parseHistory(output)
+      return result
     } catch (error) {
       throw this.handleError(error, `获取聊天记录失败: ${sessionName}`)
     }

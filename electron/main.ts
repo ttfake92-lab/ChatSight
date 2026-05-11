@@ -2,7 +2,8 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { WeChatExecutor } from './wechat/executor'
 
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
+// 默认连接到 Vite 开发服务器
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
 
 let wechatExecutor: WeChatExecutor
 
@@ -12,6 +13,9 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   })
 
@@ -48,7 +52,8 @@ function registerWeChatHandlers() {
 
   ipcMain.handle('wechat:history', async (_, sessionName: string, limit?: number) => {
     try {
-      return await wechatExecutor.getHistory(sessionName, limit)
+      const result = await wechatExecutor.getHistory(sessionName, limit)
+      return result
     } catch (error: any) {
       return { error: error.message, code: error.code }
     }
@@ -79,9 +84,18 @@ function registerWeChatHandlers() {
   })
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   initializeWeChatExecutor()
   registerWeChatHandlers()
+  
+  // 自动初始化 wechat-cli
+  try {
+    await wechatExecutor.init()
+    console.log('✅ wechat-cli 初始化成功')
+  } catch (error: any) {
+    console.error('❌ wechat-cli 初始化失败:', error.message)
+  }
+  
   createWindow()
 })
 

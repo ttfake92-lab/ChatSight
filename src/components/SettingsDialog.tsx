@@ -58,8 +58,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     updateAIConfig({
       provider,
       apiKey: apiKey.trim(),
-      model: model.trim() || (provider === 'openai' ? 'gpt-4' : 'claude-3-sonnet-20240229'),
-      baseUrl: baseUrl.trim() || undefined
+      model: model.trim() || getDefaultModel(provider),
+      baseUrl: baseUrl.trim() || (provider === 'minimax' ? 'https://api.minimaxi.com/v1' : undefined)
     })
     saveConfig()
     toast.success('设置已保存')
@@ -76,6 +76,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         return 'gpt-4'
       case 'claude':
         return 'claude-3-sonnet-20240229'
+      case 'minimax':
+        return 'MiniMax-M2.7-highspeed'
       default:
         return 'gpt-4'
     }
@@ -94,7 +96,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label htmlFor="provider">AI 提供商</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -128,6 +130,24 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <Bot className="h-5 w-5" />
                 <span className="text-sm font-medium">Claude</span>
                 {provider === 'claude' && (
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setProvider('minimax')
+                  if (!model) setModel('MiniMax-M2.7-highspeed')
+                }}
+                className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-colors ${
+                  provider === 'minimax'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Bot className="h-5 w-5" />
+                <span className="text-sm font-medium">MiniMax</span>
+                {provider === 'minimax' && (
                   <CheckCircle2 className="h-4 w-4 text-primary" />
                 )}
               </button>
@@ -173,7 +193,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <p className="text-xs text-muted-foreground">
               {provider === 'openai'
                 ? '推荐使用 gpt-4 以获得更好的分析效果'
-                : '推荐使用 claude-3-sonnet-20240229'}
+                : provider === 'claude'
+                ? '推荐使用 claude-3-sonnet-20240229'
+                : '推荐使用 MiniMax-M2.7-highspeed'}
             </p>
           </div>
 
@@ -185,7 +207,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               placeholder={
                 provider === 'openai'
                   ? 'https://api.openai.com/v1'
-                  : 'https://api.anthropic.com/v1'
+                  : provider === 'claude'
+                  ? 'https://api.anthropic.com/v1'
+                  : 'https://api.minimaxi.com/v1'
               }
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
