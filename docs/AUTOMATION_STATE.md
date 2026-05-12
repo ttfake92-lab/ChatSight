@@ -6,28 +6,30 @@ Phase 2 - 监控告警
 
 ## Current Active Task
 
-[已完成 - Task 2.2.2: 实现关键词匹配引擎]
+[已完成 - Task 2.3.1: 集成 Electron Notification API]
 
 ## Current Active Issue
 
-[Task 2.3.1: 集成 Electron Notification API]
+[Task 2.3.2: 实现通知管理组件]
 
 ## Last Known Verification
 
 - `npm install`: ✅ 成功
 - `npm run build`: ✅ 成功
 - `npx tsc --noEmit`: ✅ 成功
-- `npm test`: ✅ 成功 (14 tests passed)
+- `npm test`: ✅ 成功 (21 tests passed)
 - Task 2.1.1 已完成: getNewMessages 方法已实现，IPC 处理器已添加，preload 已暴露
 - Task 2.1.2 已完成: pollingService.ts 已创建，实现了定时轮询机制（默认 30 秒间隔），增量消息获取逻辑，以及 onMessages/onError 回调
 - Task 2.2.1 已完成: KeywordConfig.tsx 已创建，支持添加/删除关键词、正则表达式开关、启用/禁用关键词，配置持久化到 localStorage
 - Task 2.2.2 已完成: keywordMatcher.ts 已创建，实现了普通关键词匹配（不区分大小写）、正则表达式匹配、异常处理，配套测试全部通过
+- Task 2.3.1 已完成: notificationService.ts 已创建，实现了 show/showKeywordMatch/isSupported 方法；electron/main.ts 添加了 notification:show handler；preload.ts 暴露了 notification API；7 个测试全部通过
 
 ## Next Action
 
-1. 修改 electron/main.ts 添加通知 handler
-2. 创建 src/services/notificationService.ts
-3. 验证通知 API 调用功能
+1. 创建 src/components/NotificationPanel.tsx
+2. 显示历史通知列表
+3. 支持一键清空通知
+4. 验证触发关键词后显示通知，点击跳转对应会话
 
 ## Done Log
 
@@ -36,6 +38,7 @@ Phase 2 - 监控告警
 - 2026-05-12: 完成 Task 2.1.2 - 创建了 pollingService.ts，实现了定时轮询机制（默认 30 秒间隔）、增量消息获取逻辑、onMessages/onError 回调，6 个测试全部通过，构建和类型检查均通过
 - 2026-05-12: 完成 Task 2.2.1 - 创建了 KeywordConfig.tsx 组件，添加了关键词配置类型定义，扩展了 configStore 支持关键词管理（addKeyword/removeKeyword/updateKeyword），支持添加/删除关键词、正则表达式模式切换、启用/禁用关键词，配置持久化到 localStorage，npm test (6 passed)、npm run build 和 tsc 均验证通过
 - 2026-05-12: 完成 Task 2.2.2 - 创建了 keywordMatcher.ts，包含 matchSingleKeyword、matchKeywords、hasMatchingKeyword 三个函数，支持普通关键词（不区分大小写）和正则表达式匹配，以及异常处理；创建了 keywordMatcher.test.ts 包含 8 个测试用例，全部通过；总共 14 个测试通过，构建和类型检查均验证通过
+- 2026-05-12: 完成 Task 2.3.1 - 创建了 notificationService.ts，包含 show/showKeywordMatch/isSupported 方法；在 electron/main.ts 添加了 Notification 导入和 registerNotificationHandlers 函数；在 preload.ts 添加了 NotificationAPI 接口和 notification 暴露；创建了 notificationService.test.ts 包含 7 个测试用例，全部通过；总共 21 个测试通过，构建和类型检查均验证通过
 
 ## Blockers
 

@@ -1,5 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+export interface NotificationAPI {
+  show: (options: { title: string; body: string; silent?: boolean }) => Promise<{ success: boolean; error?: string }>
+}
+
 export interface WeChatAPI {
   init: () => Promise<any>
   getSessions: (limit?: number) => Promise<any>
@@ -13,6 +17,7 @@ export interface WeChatAPI {
 export interface ElectronAPI {
   platform: string
   wechat: WeChatAPI
+  notification: NotificationAPI
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -25,6 +30,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getStats: (sessionName?: string) => ipcRenderer.invoke('wechat:stats', sessionName),
     getContacts: (query?: string) => ipcRenderer.invoke('wechat:contacts', query),
     getNewMessages: (sinceTimestamp?: string) => ipcRenderer.invoke('wechat:new-messages', sinceTimestamp)
+  },
+  notification: {
+    show: (options: { title: string; body: string; silent?: boolean }) => 
+      ipcRenderer.invoke('notification:show', options)
   }
 } as ElectronAPI)
 

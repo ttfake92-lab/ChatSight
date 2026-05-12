@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Notification } from 'electron'
 import path from 'path'
 import { WeChatExecutor } from './wechat/executor'
 
@@ -93,9 +93,31 @@ function registerWeChatHandlers() {
   })
 }
 
+function registerNotificationHandlers() {
+  ipcMain.handle('notification:show', async (_, options: { title: string; body: string; silent?: boolean }) => {
+    if (!Notification.isSupported()) {
+      return { success: false, error: 'Notifications are not supported on this system' }
+    }
+
+    try {
+      const notification = new Notification({
+        title: options.title,
+        body: options.body,
+        silent: options.silent || false
+      })
+      
+      notification.show()
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+}
+
 app.whenReady().then(async () => {
   initializeWeChatExecutor()
   registerWeChatHandlers()
+  registerNotificationHandlers()
   
   // 自动初始化 wechat-cli
   try {
