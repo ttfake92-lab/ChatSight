@@ -56,6 +56,10 @@ export interface AIConfig {
   baseUrl?: string
 }
 
+export interface NotificationAPI {
+  show: (options: { title: string; body: string; silent?: boolean }) => Promise<{ success: boolean; error?: string }>
+}
+
 export interface WeChatAPI {
   init: () => Promise<any>
   getSessions: (limit?: number) => Promise<any>
@@ -69,6 +73,7 @@ export interface WeChatAPI {
 export interface ElectronAPI {
   platform: string
   wechat: WeChatAPI
+  notification: NotificationAPI
 }
 
 declare global {
@@ -148,4 +153,38 @@ export interface Stats {
   messageTypes: { type: string; count: number }[]
   messageTrend?: MessageTrend[]
   hourlyDistribution?: HourlyDistribution[]
+}
+
+// Skill System Types
+export interface SkillTrigger {
+  type: 'keywords' | 'regex' | 'member' | 'time'
+  keywords?: string[]
+  pattern?: string
+  member?: string
+  time?: string
+}
+
+export interface SkillAction {
+  type: 'notify' | 'ai_summary' | 'export' | 'log'
+  title?: string
+  template?: string
+  format?: 'json' | 'markdown'
+  message?: string
+}
+
+export interface Skill {
+  id: string
+  name: string
+  description: string
+  enabled: boolean
+  triggers: SkillTrigger[]
+  actions: SkillAction[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SkillExecutionContext {
+  message?: Message
+  sessionName?: string
+  timestamp?: string
 }

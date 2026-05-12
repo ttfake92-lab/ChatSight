@@ -1,31 +1,63 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Header } from './components/Header'
 import { Sidebar } from './components/Sidebar'
 import { ChatHistory } from './components/ChatHistory'
 import { AISummary } from './components/AISummary'
 import { FAQPanel } from './components/FAQPanel'
+import { SkillManager } from './components/SkillManager'
 import { SettingsDialog } from './components/SettingsDialog'
 import { Toaster } from './components/ui/sonner'
 import { Button } from './components/ui/button'
 import { useConfigStore } from './stores/configStore'
 import { useSessionStore } from './stores/sessionStore'
 import { useMessageStore } from './stores/messageStore'
-import { Sparkles, MessageSquare } from 'lucide-react'
+import { useSkillStore } from './stores/skillStore'
+import { pollingService } from './services/pollingService'
+import { SkillManager as SkillManagerService } from './services/skillManager'
+import { Sparkles, MessageSquare, Settings } from 'lucide-react'
+import type { Message } from './types'
 
 function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'summary' | 'faq'>('summary')
+  const [activeTab, setActiveTab] = useState<'summary' | 'faq' | 'skills'>('summary')
+  const skillManagerRef = useRef<SkillManagerService | null>(null)
 
   const { loadConfig } = useConfigStore()
   const { fetchSessions } = useSessionStore()
-  const { fetchHistory, messages } = useMessageStore()
+  const { fetchHistory, messages, appendMessages } = useMessageStore()
   const { selectedSession } = useSessionStore()
+  const { skills, loadSkills } = useSkillStore()
 
   useEffect(() => {
     loadConfig()
     fetchSessions()
-  }, [loadConfig, fetchSessions])
+    loadSkills()
+  }, [loadConfig, fetchSessions, loadSkills])
+
+  useEffect(() => {
+    if (!skillManagerRef.current) {
+      skillManagerRef.current = new SkillManagerService()
+    }
+    skillManagerRef.current.setSkills(skills)
+  }, [skills])
+
+  useEffect(() => {
+    const handleNewMessages = (newMessages: Message[]) => {
+      appendMessages(newMessages)
+      if (selectedSession && skillManagerRef.current) {
+        newMessages.forEach(msg => {
+          skillManagerRef.current!.processMessage(msg, selectedSession.name)
+        })
+      }
+    }
+
+    pollingService.startPolling({ onMessages: handleNewMessages })
+
+    return () => {
+      pollingService.stopPolling()
+    }
+  }, [selectedSession, appendMessages])
 
   useEffect(() => {
     if (selectedSession) {
@@ -85,16 +117,30 @@ function App() {
                     <MessageSquare className="w-4 h-4 mr-2" />
                     FAQ
                   </Button>
+                  <Button
+                    variant={activeTab === 'skills' ? 'default' : 'ghost'}
+                    className="flex-1 rounded-none"
+                    onClick={() => setActiveTab('skills')}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Skills
+                  </Button>
                 </div>
                 {/* Tab content */}
                 <div className="flex-1 overflow-hidden">
                   {activeTab === 'summary' ? (
                     <AISummary />
-                  ) : selectedSession ? (
-                    <FAQPanel sessionName={selectedSession.name} messages={messages} />
+                  ) : activeTab === 'faq' ? (
+                    selectedSession ? (
+                      <FAQPanel sessionName={selectedSession.name} messages={messages} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        请选择一个会话
+                      </div>
+                    )
                   ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      请选择一个会话
+                    <div className="p-4 overflow-y-auto h-full">
+                      <SkillManager />
                     </div>
                   )}
                 </div>
