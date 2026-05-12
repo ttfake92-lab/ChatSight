@@ -27,11 +27,23 @@ export interface SearchResult {
   messages: Message[]
 }
 
+export interface MessageTrend {
+  date: string
+  count: number
+}
+
+export interface HourlyDistribution {
+  hour: number
+  count: number
+}
+
 export interface Stats {
   totalMessages: number
   totalMembers: number
   activeMembers: MemberStats[]
   messageTypes: { type: string; count: number }[]
+  messageTrend?: MessageTrend[]
+  hourlyDistribution?: HourlyDistribution[]
 }
 
 export interface MemberStats {

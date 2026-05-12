@@ -1,4 +1,4 @@
-import { Session, Message, Contact, SearchResult, Stats, MemberStats } from './types'
+import { Session, Message, Contact, SearchResult, Stats, MemberStats, MessageTrend, HourlyDistribution } from './types'
 
 export class WeChatParser {
   parseSessions(output: string): Session[] {
@@ -215,7 +215,9 @@ export class WeChatParser {
         totalMessages: data.totalMessages || data.messageCount || 0,
         totalMembers: data.totalMembers || data.memberCount || 0,
         activeMembers: this.parseMemberStats(data.activeMembers || data.topMembers || []),
-        messageTypes: this.parseMessageTypes(data.messageTypes || data.types || [])
+        messageTypes: this.parseMessageTypes(data.messageTypes || data.types || []),
+        messageTrend: this.parseMessageTrend(data.messageTrend || data.trend || data.dailyStats || []),
+        hourlyDistribution: this.parseHourlyDistribution(data.hourlyDistribution || data.hourlyStats || data.timeDistribution || [])
       }
     } catch {
       return this.parseStatsFromText(output)
@@ -242,12 +244,34 @@ export class WeChatParser {
     return []
   }
 
+  private parseMessageTrend(data: any[]): MessageTrend[] | undefined {
+    if (!Array.isArray(data) || data.length === 0) {
+      return undefined
+    }
+    return data.map(item => ({
+      date: item.date || item.day || item.time || '',
+      count: item.count || item.total || 0
+    }))
+  }
+
+  private parseHourlyDistribution(data: any[]): HourlyDistribution[] | undefined {
+    if (!Array.isArray(data) || data.length === 0) {
+      return undefined
+    }
+    return data.map(item => ({
+      hour: item.hour || item.time || 0,
+      count: item.count || item.total || 0
+    }))
+  }
+
   private parseStatsFromText(output: string): Stats {
     const stats: Stats = {
       totalMessages: 0,
       totalMembers: 0,
       activeMembers: [],
-      messageTypes: []
+      messageTypes: [],
+      messageTrend: undefined,
+      hourlyDistribution: undefined
     }
 
     const totalMsgMatch = output.match(/总消息[：:]\s*(\d+)/i) || output.match(/Total Messages:\s*(\d+)/i)

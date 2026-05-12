@@ -106,3 +106,27 @@ export interface MonitoringConfig {
     weekendsOnly: boolean
   }
 }
+
+export interface MessageTrend {
+  date: string
+  count: number
+}
+
+export interface HourlyDistribution {
+  hour: number
+  count: number
+}
+
+export interface MemberStats {
+  name: string
+  messageCount: number
+}
+
+export interface Stats {
+  totalMessages: number
+  totalMembers: number
+  activeMembers: MemberStats[]
+  messageTypes: { type: string; count: number }[]
+  messageTrend?: MessageTrend[]
+  hourlyDistribution?: HourlyDistribution[]
+}
