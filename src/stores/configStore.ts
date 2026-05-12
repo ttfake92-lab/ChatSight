@@ -36,6 +36,7 @@ interface ConfigState {
   addKeyword: (keyword: Omit<KeywordConfig, 'id'>) => void
   removeKeyword: (id: string) => void
   updateKeyword: (id: string, updates: Partial<KeywordConfig>) => void
+  updateSilentHours: (updates: Partial<MonitoringConfig['silentHours']>) => void
   loadMonitoringConfig: () => void
   saveMonitoringConfig: () => void
 }
@@ -113,6 +114,16 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
         keywords: state.monitoringConfig.keywords.map((kw) =>
           kw.id === id ? { ...kw, ...updates } : kw
         ),
+      },
+    }))
+    get().saveMonitoringConfig()
+  },
+
+  updateSilentHours: (updates) => {
+    set((state) => ({
+      monitoringConfig: {
+        ...state.monitoringConfig,
+        silentHours: { ...state.monitoringConfig.silentHours, ...updates },
       },
     }))
     get().saveMonitoringConfig()

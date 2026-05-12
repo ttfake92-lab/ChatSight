@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Bot, Key, Cpu, CheckCircle2 } from 'lucide-react'
+import { Bot, Key, Cpu, CheckCircle2, Moon } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const { aiConfig, updateAIConfig, saveConfig } = useConfigStore()
+  const { aiConfig, updateAIConfig, saveConfig, monitoringConfig, updateSilentHours, loadMonitoringConfig } = useConfigStore()
   const [provider, setProvider] = useState<AIProvider>(aiConfig.provider)
   const [apiKey, setApiKey] = useState(aiConfig.apiKey)
   const [model, setModel] = useState(aiConfig.model)
@@ -35,8 +35,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       setModel(aiConfig.model)
       setBaseUrl(aiConfig.baseUrl || '')
       setErrors({})
+      loadMonitoringConfig()
     }
-  }, [open, aiConfig])
+  }, [open, aiConfig, loadMonitoringConfig])
 
   const validateForm = (): boolean => {
     const newErrors: { apiKey?: string } = {}
@@ -217,6 +218,69 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <p className="text-xs text-muted-foreground">
               如需使用代理或自定义 API 端点，请在此填写
             </p>
+          </div>
+
+          <div className="border-t pt-4 mt-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Moon className="h-4 w-4" />
+              <Label className="text-base font-medium">静默时段</Label>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              在静默时段内，关键词匹配不会触发桌面通知
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="silentEnabled"
+                  checked={monitoringConfig.silentHours.enabled}
+                  onChange={(e) => updateSilentHours({ enabled: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="silentEnabled" className="text-sm font-normal cursor-pointer">
+                  启用静默时段
+                </Label>
+              </div>
+
+              {monitoringConfig.silentHours.enabled && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="silentStart">开始时间</Label>
+                      <Input
+                        id="silentStart"
+                        type="time"
+                        value={monitoringConfig.silentHours.start}
+                        onChange={(e) => updateSilentHours({ start: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="silentEnd">结束时间</Label>
+                      <Input
+                        id="silentEnd"
+                        type="time"
+                        value={monitoringConfig.silentHours.end}
+                        onChange={(e) => updateSilentHours({ end: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="weekendsOnly"
+                      checked={monitoringConfig.silentHours.weekendsOnly}
+                      onChange={(e) => updateSilentHours({ weekendsOnly: e.target.checked })}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="weekendsOnly" className="text-sm font-normal cursor-pointer">
+                      仅周末生效
+                    </Label>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
