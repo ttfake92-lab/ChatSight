@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import type { AIConfig, AIProvider } from '../types'
+import type { AIConfig, AIProvider, KeywordConfig, MonitoringConfig } from '../types'
 
-const STORAGE_KEY = 'chatsight-ai-config'
+const AI_CONFIG_KEY = 'chatsight-ai-config'
+const MONITORING_CONFIG_KEY = 'chatsight-monitoring-config'
 
 const getDefaultConfig = (): AIConfig => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
@@ -14,18 +15,35 @@ const getDefaultConfig = (): AIConfig => {
   }
 }
 
+const getDefaultMonitoringConfig = (): MonitoringConfig => ({
+  keywords: [],
+  silentHours: {
+    enabled: false,
+    start: '22:00',
+    end: '08:00',
+    weekendsOnly: false,
+  },
+})
+
 interface ConfigState {
   aiConfig: AIConfig
   isConfigured: boolean
+  monitoringConfig: MonitoringConfig
   updateAIConfig: (config: Partial<AIConfig>) => void
   setConfigured: (isConfigured: boolean) => void
   loadConfig: () => void
   saveConfig: () => void
+  addKeyword: (keyword: Omit<KeywordConfig, 'id'>) => void
+  removeKeyword: (id: string) => void
+  updateKeyword: (id: string, updates: Partial<KeywordConfig>) => void
+  loadMonitoringConfig: () => void
+  saveMonitoringConfig: () => void
 }
 
 export const useConfigStore = create<ConfigState>((set, get) => ({
   aiConfig: getDefaultConfig(),
   isConfigured: false,
+  monitoringConfig: getDefaultMonitoringConfig(),
 
   updateAIConfig: (config) => {
     set((state) => ({
@@ -37,7 +55,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
 
   loadConfig: () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = localStorage.getItem(AI_CONFIG_KEY)
       if (stored) {
         const parsed = JSON.parse(stored) as AIConfig
         set({ aiConfig: parsed, isConfigured: true })
@@ -57,10 +75,67 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   saveConfig: () => {
     const { aiConfig } = get()
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(aiConfig))
+      localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(aiConfig))
       set({ isConfigured: true })
     } catch (err) {
       console.error('保存配置失败')
+    }
+  },
+
+  addKeyword: (keyword) => {
+    const newKeyword: KeywordConfig = {
+      ...keyword,
+      id: `kw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    }
+    set((state) => ({
+      monitoringConfig: {
+        ...state.monitoringConfig,
+        keywords: [...state.monitoringConfig.keywords, newKeyword],
+      },
+    }))
+    get().saveMonitoringConfig()
+  },
+
+  removeKeyword: (id) => {
+    set((state) => ({
+      monitoringConfig: {
+        ...state.monitoringConfig,
+        keywords: state.monitoringConfig.keywords.filter((kw) => kw.id !== id),
+      },
+    }))
+    get().saveMonitoringConfig()
+  },
+
+  updateKeyword: (id, updates) => {
+    set((state) => ({
+      monitoringConfig: {
+        ...state.monitoringConfig,
+        keywords: state.monitoringConfig.keywords.map((kw) =>
+          kw.id === id ? { ...kw, ...updates } : kw
+        ),
+      },
+    }))
+    get().saveMonitoringConfig()
+  },
+
+  loadMonitoringConfig: () => {
+    try {
+      const stored = localStorage.getItem(MONITORING_CONFIG_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as MonitoringConfig
+        set({ monitoringConfig: parsed })
+      }
+    } catch {
+      set({ monitoringConfig: getDefaultMonitoringConfig() })
+    }
+  },
+
+  saveMonitoringConfig: () => {
+    const { monitoringConfig } = get()
+    try {
+      localStorage.setItem(MONITORING_CONFIG_KEY, JSON.stringify(monitoringConfig))
+    } catch (err) {
+      console.error('保存监控配置失败')
     }
   },
 }))

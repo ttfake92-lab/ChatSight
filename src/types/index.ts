@@ -89,3 +89,20 @@ export type AIError =
   | { code: 'QUOTA_EXCEEDED'; message: string }
   | { code: 'NETWORK_ERROR'; message: string }
   | { code: 'RATE_LIMIT'; message: string }
+
+export interface KeywordConfig {
+  id: string
+  keyword: string
+  isRegex: boolean
+  enabled: boolean
+}
+
+export interface MonitoringConfig {
+  keywords: KeywordConfig[]
+  silentHours: {
+    enabled: boolean
+    start: string
+    end: string
+    weekendsOnly: boolean
+  }
+}
