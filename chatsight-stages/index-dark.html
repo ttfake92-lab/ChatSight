@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatSight 产品发展路线图</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0A0A0B;
+            --surface: #141416;
+            --border: #2A2A2E;
+            --text-primary: #FAFAFA;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --phase-1: #60A5FA;
+            --phase-2: #FBBF24;
+            --phase-3: #34D399;
+            --phase-4: #A78BFA;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 60px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 100px;
+        }
+
+        .header__label {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .header__title {
+            font-size: 56px;
+            font-weight: 300;
+            letter-spacing: -2px;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .header__subtitle {
+            font-size: 18px;
+            font-weight: 300;
+            color: var(--text-secondary);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        .timeline__line {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .timeline__progress {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--text-primary);
+        }
+
+        .timeline__nodes {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .timeline__node {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline__node--1 { 
+            background: var(--phase-1);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+        }
+        .timeline__node--2 { 
+            background: var(--phase-2);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+        }
+        .timeline__node--3 { 
+            background: var(--phase-3);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
+        }
+        .timeline__node--4 { 
+            background: var(--phase-4);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.4);
+        }
+
+        /* Cards Grid */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 2px;
+            padding: 40px 32px;
+            position: relative;
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .card--1::before { background: var(--phase-1); }
+        .card--2::before { background: var(--phase-2); }
+        .card--3::before { background: var(--phase-3); }
+        .card--4::before { background: var(--phase-4); }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--text-muted);
+        }
+
+        .card__number {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .card__phase {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .card--1 .card__phase { color: var(--phase-1); }
+        .card--2 .card__phase { color: var(--phase-2); }
+        .card--3 .card__phase { color: var(--phase-3); }
+        .card--4 .card__phase { color: var(--phase-4); }
+
+        .card__title {
+            font-size: 28px;
+            font-weight: 500;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        .card__subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .card__divider {
+            width: 32px;
+            height: 1px;
+            background: var(--border);
+            margin-bottom: 24px;
+        }
+
+        .card__features {
+            list-style: none;
+        }
+
+        .card__feature {
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card__feature:last-child {
+            border-bottom: none;
+        }
+
+        .card__feature::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .card--1 .card__feature::before { background: var(--phase-1); }
+        .card--2 .card__feature::before { background: var(--phase-2); }
+        .card--3 .card__feature::before { background: var(--phase-3); }
+        .card--4 .card__feature::before { background: var(--phase-4); }
+
+        .card__accent {
+            margin-top: 32px;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .card--1 .card__accent { color: var(--phase-1); }
+        .card--2 .card__accent { color: var(--phase-2); }
+        .card--3 .card__accent { color: var(--phase-3); }
+        .card--4 .card__accent { color: var(--phase-4); }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer__text {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .footer__legend {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+        }
+
+        .footer__legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .footer__legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .footer__legend-dot--1 { 
+            background: var(--phase-1);
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+        }
+        .footer__legend-dot--2 { 
+            background: var(--phase-2);
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        }
+        .footer__legend-dot--3 { 
+            background: var(--phase-3);
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+        }
+        .footer__legend-dot--4 { 
+            background: var(--phase-4);
+            box-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .card:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <p class="header__label">ChatSight</p>
+            <h1 class="header__title">产品发展路线图</h1>
+            <p class="header__subtitle">四个阶段 · 从 MVP 到高级功能</p>
+        </header>
+
+        <div class="timeline">
+            <div class="timeline__line"></div>
+            <div class="timeline__progress"></div>
+            <div class="timeline__nodes">
+                <div class="timeline__node timeline__node--1"></div>
+                <div class="timeline__node timeline__node--2"></div>
+                <div class="timeline__node timeline__node--3"></div>
+                <div class="timeline__node timeline__node--4"></div>
+            </div>
+        </div>
+
+        <div class="cards">
+            <article class="card card--1">
+                <p class="card__number">01</p>
+                <p class="card__phase">第一阶段</p>
+                <h2 class="card__title">核心 MVP</h2>
+                <p class="card__subtitle">快速验证产品核心价值</p>
+                <div class="card__divider"></div>
+                <ul class="card__features">
+                    <li class="card__feature">会话列表展示</li>
+                    <li class="card__feature">聊天记录查看</li>
+                    <li class="card__feature">AI 摘要生成</li>
+                </ul>
+                <p class="card__accent">验证</p>
+            </article>
+
+            <article class="card card--2">
+                <p class="card__number">02</p>
+                <p class="card__phase">第二阶段</p>
+                <h2 class="card__title">监控告警</h2>
+                <p class="card__subtitle">实现实时监控能力</p>
+                <div class="card__divider"></div>
+                <ul class="card__features">
+                    <li class="card__feature">实时消息监控</li>
+                    <li class="card__feature">关键词告警</li>
+                    <li class="card__feature">桌面原生通知</li>
+                </ul>
+                <p class="card__accent">响应</p>
+            </article>
+
+            <article class="card card--3">
+                <p class="card__number">03</p>
+                <p class="card__phase">第三阶段</p>
+                <h2 class="card__title">数据分析</h2>
+                <p class="card__subtitle">提供数据驱动决策支持</p>
+                <div class="card__divider"></div>
+                <ul class="card__features">
+                    <li class="card__feature">消息统计分析</li>
+                    <li class="card__feature">活跃度看板</li>
+                    <li class="card__feature">数据可视化</li>
+                </ul>
+                <p class="card__accent">洞察</p>
+            </article>
+
+            <article class="card card--4">
+                <p class="card__number">04</p>
+                <p class="card__phase">第四阶段</p>
+                <h2 class="card__title">高级功能</h2>
+                <p class="card__subtitle">满足高阶用户定制化需求</p>
+                <div class="card__divider"></div>
+                <ul class="card__features">
+                    <li class="card__feature">全文搜索</li>
+                    <li class="card__feature">FAQ 提取</li>
+                    <li class="card__feature">Skill 系统</li>
+                </ul>
+                <p class="card__accent">扩展</p>
+            </article>
+        </div>
+
+        <footer class="footer">
+            <p class="footer__text">从核心功能到高级定制化的完整演进路径</p>
+            <div class="footer__legend">
+                <div class="footer__legend-item">
+                    <span class="footer__legend-dot footer__legend-dot--1"></span>
+                    <span>核心 MVP</span>
+                </div>
+                <div class="footer__legend-item">
+                    <span class="footer__legend-dot footer__legend-dot--2"></span>
+                    <span>监控告警</span>
+                </div>
+                <div class="footer__legend-item">
+                    <span class="footer__legend-dot footer__legend-dot--3"></span>
+                    <span>数据分析</span>
+                </div>
+                <div class="footer__legend-item">
+                    <span class="footer__legend-dot footer__legend-dot--4"></span>
+                    <span>高级功能</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
