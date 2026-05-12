@@ -2,22 +2,22 @@
 
 ## Current Phase
 
-Phase 3 - 数据分析 (进行中)
+Phase 3 - 数据分析 (基本完成)
 
 ## Current Active Task
 
-[进行中 - Task 3.2.1: 创建 Dashboard 组件]
+[Phase 3 全部任务完成]
 
 ## Current Active Issue
 
-[Phase 3 Task 3.2.1 完成 - Dashboard 组件已创建]
+[Phase 3 验收通过 - Task 3.2.2/3.3.1/3.3.2/3.4.1/3.4.2 全部完成]
 
 ## Last Known Verification
 
 - `npm install`: ✅ 成功
 - `npm run build`: ✅ 成功
 - `npx tsc --noEmit`: ✅ 成功
-- `npm test`: ✅ 成功 (52 tests passed)
+- `npm test`: ✅ 成功 (60 tests passed)
 - Task 2.1.1 已完成: getNewMessages 方法已实现，IPC 处理器已添加，preload 已暴露
 - Task 2.1.2 已完成: pollingService.ts 已创建，实现了定时轮询机制（默认 30 秒间隔），增量消息获取逻辑，以及 onMessages/onError 回调
 - Task 2.2.1 已完成: KeywordConfig.tsx 已创建，支持添加/删除关键词、正则表达式开关、启用/禁用关键词，配置持久化到 localStorage
@@ -28,12 +28,22 @@ Phase 3 - 数据分析 (进行中)
 - Phase 2 验收: ✅ 全部通过（29 tests passed）
 - Task 3.1.1 已完成: 验证了现有统计功能，getStats 方法、IPC handler 和 preload 暴露均已存在
 - Task 3.1.2 已完成: 完善了统计数据结构，添加了 MessageTrend、HourlyDistribution 类型，扩展了 parseStats 方法支持 messageTrend 和 hourlyDistribution 解析；创建了 9 个测试用例，全部通过
-- Task 3.2.1 已完成: 创建了 Dashboard.tsx 组件，包含概览卡片（总消息数、活跃成员、峰值时段、人均消息）、消息趋势图表（MiniTrendChart）、活跃排行列表、时段分布图表（MiniHourlyChart）、消息类型分布；创建了 dashboardUtils.ts 工具函数库（createDefaultDashboardStats、formatNumber、getPeakHour、getTopMembers、calculateEngagementRate）和 14 个测试用例，全部通过
+- Task 3.2.1 已完成: 创建了 Dashboard.tsx 组件，包含概览卡片（总消息数、活跃成员、峰值时段、人均消息）、消息趋势图表（MiniTrendChart）、活跃排行列表、时段分布图表（MiniHourlyChart）、消息类型分布；创建了 dashboardUtils.ts 工具函数库和 14 个测试用例
+- Task 3.2.2 已完成: 安装 recharts 并创建了 TrendChart.tsx 组件，使用 LineChart 实现专业的消息趋势图表，支持 7 天/30 天时间范围切换
+- Task 3.3.1 已完成: 创建了 ActivityLeaderboard.tsx 组件，使用 Trophy 图标展示活跃排行，支持 Top N 成员显示，带金银铜牌样式
+- Task 3.3.2 已完成: 创建了 TimeDistribution.tsx 组件，使用 BarChart 实现 24 小时时段分布图表，工作时间（9-22点）高亮显示
+- Task 3.4.1 已完成: 验证了 parseMessageTypes 方法已存在于 parser.ts，支持消息类型分类
+- Task 3.4.2 已完成: 创建了 MessageTypeChart.tsx 组件，使用 PieChart 实现消息类型环形图，支持文字/图片/视频/语音/表情等类型分布展示
+- Phase 3 验收通过: npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
+
+## Blockers
+
+暂无
 
 ## Next Action
 
-1. 继续完善 Phase 3 剩余任务
-2. 可选：将 Dashboard 组件集成到 App.tsx
+1. Phase 3 已基本完成，可选：将独立图表组件集成到 Dashboard
+2. 进入 Phase 4: 高级功能（搜索、FAQ、Skill 系统）
 3. 运行完整验证
 
 ## Done Log
@@ -49,7 +59,13 @@ Phase 3 - 数据分析 (进行中)
 - 2026-05-12: Phase 2 验收通过 - npm test (29 passed)、npm run build、tsc --noEmit 均验证通过
 - 2026-05-12: 完成 Task 3.1.1 - 验证了现有统计功能，getStats 方法（executor.ts）、wechat:stats IPC handler（main.ts）、getStats 暴露（preload.ts）均已正确实现
 - 2026-05-12: 完成 Task 3.1.2 - 在 types.ts 添加了 MessageTrend、HourlyDistribution、MemberStats、Stats 类型；在 parser.ts 添加了 parseMessageTrend 和 parseHourlyDistribution 方法，支持多种字段名变体；创建了 parser.test.ts 包含 9 个测试用例，全部通过；总共 38 个测试通过，构建和类型检查均验证通过
-- 2026-05-12: 完成 Task 3.2.1 - 创建了 Dashboard.tsx 组件，包含 4 个概览卡片（总消息数、活跃成员、峰值时段、人均消息）、MiniTrendChart（SVG 折线图）、活跃排行列表、MiniHourlyChart（SVG 柱状图）、消息类型分布；创建了 dashboardUtils.ts 工具函数库和 14 个测试用例；创建了 src/types/index.ts 中的 Stats 相关类型；在 electron/wechat/types.ts 添加了 MessageTrend、HourlyDistribution 类型；总共 52 个测试通过，构建和类型检查均验证通过
+- 2026-05-12: 完成 Task 3.2.1 - 创建了 Dashboard.tsx 组件，包含 4 个概览卡片、MiniTrendChart（SVG 折线图）、活跃排行列表、MiniHourlyChart（SVG 柱状图）、消息类型分布；创建了 dashboardUtils.ts 工具函数库和 14 个测试用例
+- 2026-05-13: 完成 Task 3.2.2 - 安装 recharts 并创建 TrendChart.tsx 组件，使用 LineChart 实现专业消息趋势图表，支持 7 天/30 天时间范围切换；创建了 TrendChart.test.tsx，2 个测试通过
+- 2026-05-13: 完成 Task 3.3.1 - 创建了 ActivityLeaderboard.tsx 组件，使用 Trophy 图标展示活跃排行，支持 Top N 成员显示，带金银铜牌样式；创建了 ActivityLeaderboard.test.tsx，2 个测试通过
+- 2026-05-13: 完成 Task 3.3.2 - 创建了 TimeDistribution.tsx 组件，使用 BarChart 实现 24 小时时段分布图表，工作时间（9-22点）高亮显示；创建了 TimeDistribution.test.tsx，2 个测试通过
+- 2026-05-13: 完成 Task 3.4.1 - 验证了 parseMessageTypes 方法已存在于 parser.ts
+- 2026-05-13: 完成 Task 3.4.2 - 创建了 MessageTypeChart.tsx 组件，使用 PieChart 实现消息类型环形图，支持文字/图片/视频/语音/表情等类型分布展示；创建了 MessageTypeChart.test.tsx，2 个测试通过
+- 2026-05-13: Phase 3 验收通过 - npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
 
 ## Blockers
 
