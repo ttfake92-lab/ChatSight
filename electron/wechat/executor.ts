@@ -82,6 +82,20 @@ export class WeChatExecutor {
     }
   }
 
+  async getNewMessages(sinceTimestamp?: string): Promise<Message[]> {
+    this.ensureInitialized()
+    try {
+      const args = ['new-messages']
+      if (sinceTimestamp) {
+        args.push('--since', sinceTimestamp)
+      }
+      const output = await this.executeCommand(args)
+      return this.parser.parseHistory(output)
+    } catch (error) {
+      throw this.handleError(error, '获取新消息失败')
+    }
+  }
+
   private async executeCommand(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
       const command = this.commandPrefix.split(' ')[0]

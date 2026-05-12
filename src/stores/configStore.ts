@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { AIConfig, AIProvider } from '../types'
 
-const STORAGE_KEY = 'wechat-insight-ai-config'
+const STORAGE_KEY = 'chatsight-ai-config'
 
 const getDefaultConfig = (): AIConfig => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY || ''

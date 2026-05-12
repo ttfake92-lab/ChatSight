@@ -7,6 +7,7 @@ export interface WeChatAPI {
   search: (keyword: string, sessionName?: string) => Promise<any>
   getStats: (sessionName?: string) => Promise<any>
   getContacts: (query?: string) => Promise<any>
+  getNewMessages: (sinceTimestamp?: string) => Promise<any>
 }
 
 export interface ElectronAPI {
@@ -22,7 +23,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getHistory: (sessionName: string, limit?: number) => ipcRenderer.invoke('wechat:history', sessionName, limit),
     search: (keyword: string, sessionName?: string) => ipcRenderer.invoke('wechat:search', keyword, sessionName),
     getStats: (sessionName?: string) => ipcRenderer.invoke('wechat:stats', sessionName),
-    getContacts: (query?: string) => ipcRenderer.invoke('wechat:contacts', query)
+    getContacts: (query?: string) => ipcRenderer.invoke('wechat:contacts', query),
+    getNewMessages: (sinceTimestamp?: string) => ipcRenderer.invoke('wechat:new-messages', sinceTimestamp)
   }
 } as ElectronAPI)
 

@@ -56,6 +56,27 @@ export interface AIConfig {
   baseUrl?: string
 }
 
+export interface WeChatAPI {
+  init: () => Promise<any>
+  getSessions: (limit?: number) => Promise<any>
+  getHistory: (sessionName: string, limit?: number) => Promise<any>
+  search: (keyword: string, sessionName?: string) => Promise<any>
+  getStats: (sessionName?: string) => Promise<any>
+  getContacts: (query?: string) => Promise<any>
+  getNewMessages: (sinceTimestamp?: string) => Promise<any>
+}
+
+export interface ElectronAPI {
+  platform: string
+  wechat: WeChatAPI
+}
+
+declare global {
+  interface Window {
+    electronAPI: ElectronAPI
+  }
+}
+
 export type WeChatError = 
   | { code: 'NOT_INITIALIZED'; message: string }
   | { code: 'NOT_FOUND'; message: string }

@@ -11,6 +11,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    title: 'ChatSight',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
@@ -78,6 +79,14 @@ function registerWeChatHandlers() {
   ipcMain.handle('wechat:contacts', async (_, query?: string) => {
     try {
       return await wechatExecutor.getContacts(query)
+    } catch (error: any) {
+      return { error: error.message, code: error.code }
+    }
+  })
+
+  ipcMain.handle('wechat:new-messages', async (_, sinceTimestamp?: string) => {
+    try {
+      return await wechatExecutor.getNewMessages(sinceTimestamp)
     } catch (error: any) {
       return { error: error.message, code: error.code }
     }

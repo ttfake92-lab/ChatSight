@@ -26,7 +26,7 @@ export function Header({
           <div className="flex flex-col">
             <span className="text-lg font-semibold">微信洞察</span>
             <span className="text-xs text-muted-foreground">
-              WeChat Insight
+              ChatSight
             </span>
           </div>
         </div>

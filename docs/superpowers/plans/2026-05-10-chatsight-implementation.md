@@ -1,4 +1,4 @@
-# Wechat-Insight 实现计划（第一阶段：核心 MVP）
+# ChatSight 实现计划（第一阶段：核心 MVP）
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -112,7 +112,7 @@ chatsight/
   },
   "build": {
     "appId": "ai.wesight.chatsight",
-    "productName": "Wechat-Insight",
+    "productName": "ChatSight",
     "directories": {
       "output": "release"
     },
@@ -224,8 +224,8 @@ export default defineConfig({
 
 ```json
 {
-  "appId": "ai.wesight.chatsight",
-  "productName": "Wechat-Insight",
+  "appId": "ai.chatsight.app",
+  "productName": "ChatSight",
   "directories": {
     "output": "release"
   },
@@ -257,7 +257,7 @@ VITE_ANTHROPIC_API_KEY=your-anthropic-api-key
 VITE_DEFAULT_AI_MODEL=gpt-4
 
 # Application Config
-VITE_APP_NAME=Wechat-Insight
+VITE_APP_NAME=ChatSight
 ```
 
 - [ ] **Step 7: 创建 tailwind.config.js**
@@ -333,7 +333,7 @@ export default {
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wechat-Insight</title>
+    <title>ChatSight</title>
   </head>
   <body>
     <div id="root"></div>
@@ -1717,7 +1717,7 @@ export function Header({ onRefresh, onSettings, isRefreshing }: HeaderProps) {
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">W</span>
           </div>
-          <h1 className="text-xl font-semibold">Wechat-Insight</h1>
+          <h1 className="text-xl font-semibold">ChatSight</h1>
         </div>
         
         <div className="flex items-center gap-2">
