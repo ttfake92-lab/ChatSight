@@ -127,6 +127,20 @@ export interface SearchResult {
   messages: Message[]
 }
 
+export interface FAQItem {
+  id: string
+  question: string
+  answer?: string
+  timestamp: string
+  sourceMessages: string[]
+}
+
+export interface FAQSession {
+  sessionName: string
+  faqs: FAQItem[]
+  lastUpdated: string
+}
+
 export interface Stats {
   totalMessages: number
   totalMembers: number

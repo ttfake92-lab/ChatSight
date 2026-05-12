@@ -6,11 +6,11 @@ Phase 4 - 高级功能 (进行中)
 
 ## Current Active Task
 
-Task 4.1.1 已完成（搜索功能已实现)
+Task 4.2.1 已完成（FAQ 提取功能已实现)
 
 ## Current Active Issue
 
-[Phase 4 Task 4.1 - 搜索功能完成 - Task 4.1.1/4.1.2 已完成]
+[Phase 4 Task 4.2 - FAQ 提取功能完成 - Task 4.2.1/4.2.2 已完成]
 
 ## Last Known Verification
 
@@ -37,6 +37,8 @@ Task 4.1.1 已完成（搜索功能已实现)
 - Phase 3 验收通过: npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
 - Task 4.1.1 已完成: 验证了搜索功能已完整实现，包括 main.ts 中的 wechat:search handler，executor.ts 中的 search 方法，parser.ts 中的 parseSearchResults 方法，以及 preload.ts 中的 search 暴露
 - Task 4.1.2 已完成: 更新了 types.ts 添加 SearchResult 类型；创建了 searchStore.ts 管理搜索状态；创建了 SearchResults.tsx 组件展示搜索结果（包含关键词高亮）；更新了 Sidebar.tsx 支持搜索模式切换，所有验证均通过
+- Task 4.2.1 已完成: 更新了 types.ts 添加 FAQItem、FAQSession 类型；创建了 faqService.ts，实现了 FAQ 提取、添加、更新、删除功能，支持 JSON 和 Markdown 导出，数据持久化到 localStorage
+- Task 4.2.2 已完成: 创建了 FAQPanel.tsx 组件，包含 FAQ 列表展示、展开/折叠、添加/编辑/删除 FAQ、导出功能、AI 自动提取 FAQ 功能；更新了 App.tsx，添加了 AI 摘要/FAQ 标签页切换功能，所有验证均通过
 
 ## Blockers
 
@@ -44,9 +46,8 @@ Task 4.1.1 已完成（搜索功能已实现)
 
 ## Next Action
 
-1. 继续 Phase 4 的 Task 4.2: FAQ 提取
-2. 继续 Phase 4 的 Task 4.3: Skill 系统
-3. 运行完整验证
+1. 继续 Phase 4 的 Task 4.3: Skill 系统
+2. 运行完整验证
 
 ## Done Log
 
@@ -70,10 +71,8 @@ Task 4.1.1 已完成（搜索功能已实现)
 - 2026-05-13: Phase 3 验收通过 - npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
 - 2026-05-13: 完成 Phase 4 Task 4.1.1 - 验证搜索功能已完整实现
 - 2026-05-13: 完成 Phase 4 Task 4.1.2 - 更新 types.ts 添加 SearchResult 类型，创建 searchStore.ts 和 SearchResults.tsx，更新 Sidebar.tsx 支持搜索模式，所有验证通过
-
-## Blockers
-
-暂无
+- 2026-05-13: 完成 Phase 4 Task 4.2.1 - 更新 types.ts 添加 FAQ 相关类型定义，创建 faqService.ts 实现 FAQ 管理功能
+- 2026-05-13: 完成 Phase 4 Task 4.2.2 - 创建 FAQPanel.tsx 组件，更新 App.tsx 添加标签页切换，所有验证通过
 
 ## Rules For Automation Runs
 
