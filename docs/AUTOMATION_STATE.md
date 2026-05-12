@@ -2,15 +2,15 @@
 
 ## Current Phase
 
-Phase 3 - 数据分析 (基本完成)
+Phase 4 - 高级功能 (进行中)
 
 ## Current Active Task
 
-[Phase 3 全部任务完成]
+Task 4.1.1 已完成（搜索功能已实现)
 
 ## Current Active Issue
 
-[Phase 3 验收通过 - Task 3.2.2/3.3.1/3.3.2/3.4.1/3.4.2 全部完成]
+[Phase 4 Task 4.1 - 搜索功能完成 - Task 4.1.1/4.1.2 已完成]
 
 ## Last Known Verification
 
@@ -35,6 +35,8 @@ Phase 3 - 数据分析 (基本完成)
 - Task 3.4.1 已完成: 验证了 parseMessageTypes 方法已存在于 parser.ts，支持消息类型分类
 - Task 3.4.2 已完成: 创建了 MessageTypeChart.tsx 组件，使用 PieChart 实现消息类型环形图，支持文字/图片/视频/语音/表情等类型分布展示
 - Phase 3 验收通过: npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
+- Task 4.1.1 已完成: 验证了搜索功能已完整实现，包括 main.ts 中的 wechat:search handler，executor.ts 中的 search 方法，parser.ts 中的 parseSearchResults 方法，以及 preload.ts 中的 search 暴露
+- Task 4.1.2 已完成: 更新了 types.ts 添加 SearchResult 类型；创建了 searchStore.ts 管理搜索状态；创建了 SearchResults.tsx 组件展示搜索结果（包含关键词高亮）；更新了 Sidebar.tsx 支持搜索模式切换，所有验证均通过
 
 ## Blockers
 
@@ -42,8 +44,8 @@ Phase 3 - 数据分析 (基本完成)
 
 ## Next Action
 
-1. Phase 3 已基本完成，可选：将独立图表组件集成到 Dashboard
-2. 进入 Phase 4: 高级功能（搜索、FAQ、Skill 系统）
+1. 继续 Phase 4 的 Task 4.2: FAQ 提取
+2. 继续 Phase 4 的 Task 4.3: Skill 系统
 3. 运行完整验证
 
 ## Done Log
@@ -66,6 +68,8 @@ Phase 3 - 数据分析 (基本完成)
 - 2026-05-13: 完成 Task 3.4.1 - 验证了 parseMessageTypes 方法已存在于 parser.ts
 - 2026-05-13: 完成 Task 3.4.2 - 创建了 MessageTypeChart.tsx 组件，使用 PieChart 实现消息类型环形图，支持文字/图片/视频/语音/表情等类型分布展示；创建了 MessageTypeChart.test.tsx，2 个测试通过
 - 2026-05-13: Phase 3 验收通过 - npm test (60 passed)、npm run build、tsc --noEmit 均验证通过
+- 2026-05-13: 完成 Phase 4 Task 4.1.1 - 验证搜索功能已完整实现
+- 2026-05-13: 完成 Phase 4 Task 4.1.2 - 更新 types.ts 添加 SearchResult 类型，创建 searchStore.ts 和 SearchResults.tsx，更新 Sidebar.tsx 支持搜索模式，所有验证通过
 
 ## Blockers
 

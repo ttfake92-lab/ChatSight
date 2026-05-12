@@ -122,6 +122,11 @@ export interface MemberStats {
   messageCount: number
 }
 
+export interface SearchResult {
+  session: string
+  messages: Message[]
+}
+
 export interface Stats {
   totalMessages: number
   totalMembers: number

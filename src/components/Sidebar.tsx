@@ -1,8 +1,11 @@
-import { Search, MessageCircle, Users, Loader2 } from 'lucide-react'
+import { Search, MessageCircle, Users, Loader2, X } from 'lucide-react'
 import { Input } from './ui/input'
+import { Button } from './ui/button'
 import { useSessionStore } from '../stores/sessionStore'
+import { useSearchStore } from '../stores/searchStore'
+import { SearchResults } from './SearchResults'
 import { cn, formatTime, truncateText } from '../lib/utils'
-import type { Session } from '../types'
+import type { Session, Message } from '../types'
 
 interface SidebarProps {
   className?: string
@@ -17,6 +20,28 @@ export function Sidebar({ className = '' }: SidebarProps) {
     setSearchQuery,
     setSelectedSession
   } = useSessionStore()
+  const {
+    isSearchMode,
+    setIsSearchMode,
+    clearSearch
+  } = useSearchStore()
+
+  const handleSearchButtonClick = () => {
+    if (isSearchMode) {
+      setIsSearchMode(false)
+      clearSearch()
+    } else {
+      setIsSearchMode(true)
+    }
+  }
+
+  const handleSelectMessage = (sessionName: string, _message: Message) => {
+    // 先找到对应的会话
+    const targetSession = sessions.find(s => s.name === sessionName)
+    if (targetSession) {
+      setSelectedSession(targetSession)
+    }
+  }
 
   const filteredSessions = sessions.filter((session) =>
     session.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,9 +101,34 @@ export function Sidebar({ className = '' }: SidebarProps) {
     )
   }
 
+  if (isSearchMode) {
+    return (
+      <div className={cn('flex flex-col h-full bg-card border-r', className)}>
+        <SearchResults
+          onBack={() => {
+            setIsSearchMode(false)
+            clearSearch()
+          }}
+          onSelectMessage={handleSelectMessage}
+        />
+      </div>
+    )
+  }
+
   return (
     <aside className={cn('flex flex-col h-full bg-card border-r', className)}>
-      <div className="p-4 border-b">
+      <div className="p-4 border-b space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">ChatSight</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSearchButtonClick}
+            className="ml-auto"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -87,6 +137,14 @@ export function Sidebar({ className = '' }: SidebarProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-accent"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
       </div>
 
