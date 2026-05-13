@@ -1,7 +1,8 @@
 # ChatSight 项目健康检查与诊断报告
 
 **日期**: 2026-05-13  
-**报告生成时间**: 2026-05-13
+**报告生成时间**: 2026-05-13  
+**检查者**: AI Assistant
 
 ---
 
@@ -9,9 +10,10 @@
 
 本次项目健康检查完成以下工作：
 - ✅ Git 状态检查
-- ✅ Jest 单元测试运行
+- ✅ Jest 单元测试运行（60 个测试，100% 通过率）
 - ✅ TypeScript 编译检查
 - ✅ 项目结构与代码分析
+- ✅ 配置文件审查
 
 **总体状态**: 🟢 健康
 
@@ -37,19 +39,19 @@
 | 测试套件数 | 10 |
 | 总测试数 | 60 |
 | 通过率 | 100% |
-| 运行时间 | 0.526 秒 |
+| 运行时间 | 0.52 秒 |
 
 **通过的测试套件**:
-- `src/components/TrendChart.test.tsx`
-- `src/components/MessageTypeChart.test.tsx`
-- `src/components/TimeDistribution.test.tsx`
-- `src/components/ActivityLeaderboard.test.tsx`
-- `src/lib/keywordMatcher.test.ts`
-- `src/lib/silentHours.test.ts`
-- `src/lib/dashboardUtils.test.ts`
-- `src/services/pollingService.test.ts`
-- `src/services/notificationService.test.ts`
-- `electron/wechat/parser.test.ts`
+- [TrendChart.test.tsx](file:///Users/tangtao/Projects/ChatSight/src/components/TrendChart.test.tsx)
+- [MessageTypeChart.test.tsx](file:///Users/tangtao/Projects/ChatSight/src/components/MessageTypeChart.test.tsx)
+- [TimeDistribution.test.tsx](file:///Users/tangtao/Projects/ChatSight/src/components/TimeDistribution.test.tsx)
+- [ActivityLeaderboard.test.tsx](file:///Users/tangtao/Projects/ChatSight/src/components/ActivityLeaderboard.test.tsx)
+- [keywordMatcher.test.ts](file:///Users/tangtao/Projects/ChatSight/src/lib/keywordMatcher.test.ts)
+- [silentHours.test.ts](file:///Users/tangtao/Projects/ChatSight/src/lib/silentHours.test.ts)
+- [dashboardUtils.test.ts](file:///Users/tangtao/Projects/ChatSight/src/lib/dashboardUtils.test.ts)
+- [pollingService.test.ts](file:///Users/tangtao/Projects/ChatSight/src/services/pollingService.test.ts)
+- [notificationService.test.ts](file:///Users/tangtao/Projects/ChatSight/src/services/notificationService.test.ts)
+- [parser.test.ts](file:///Users/tangtao/Projects/ChatSight/electron/wechat/parser.test.ts)
 
 ### 3.2 TypeScript 编译检查
 
@@ -64,10 +66,10 @@
 
 ### 4.1 配置相关问题 (Medium)
 
-#### 问题 4.1.1: Jest 配置警告
+#### 问题 4.1.1: Jest 配置重复和警告
 
 **严重程度**: 🟡 Medium  
-**文件**: `jest.config.js`
+**文件**: [jest.config.js](file:///Users/tangtao/Projects/ChatSight/jest.config.js)
 
 **问题描述**:
 ```
@@ -78,15 +80,17 @@ transform: {
 },
 ```
 
+根本问题：配置重复 - `useESM: true` 同时出现在 `transform` 和 `globals` 中。
+
 **建议修复**:
-将 Jest 配置从 `globals` 迁移到 `transform` 选项中。
+删除 `globals` 部分，保留 `transform` 中的配置即可。
 
 ---
 
 #### 问题 4.1.2: tsconfig 配置建议
 
 **严重程度**: 🟡 Medium  
-**文件**: `tsconfig.json`
+**文件**: [tsconfig.json](file:///Users/tangtao/Projects/ChatSight/tsconfig.json)
 
 **问题描述**:
 ```
@@ -117,7 +121,7 @@ you should consider setting `esModuleInterop` to `true` in your TypeScript confi
 #### 问题 4.2.2: console.error 在测试中产生输出
 
 **严重程度**: 🟢 Low  
-**文件**: `src/lib/keywordMatcher.ts:14`
+**文件**: [keywordMatcher.ts:14](file:///Users/tangtao/Projects/ChatSight/src/lib/keywordMatcher.ts#L14)
 
 **问题描述**:
 测试运行时会产生预期的 console.error 输出（这是正常行为，用于测试异常处理），但可能会在 CI/CD 环境中造成干扰。
@@ -172,7 +176,7 @@ console.error
 
 ## 6. 项目进度状态
 
-根据 `docs/AUTOMATION_STATE.md`：
+根据 [AUTOMATION_STATE.md](file:///Users/tangtao/Projects/ChatSight/docs/AUTOMATION_STATE.md)：
 - **当前阶段**: Phase 4 - 高级功能 (进行中)
 - **当前活动任务**: Task 4.3 已完成（Skill 系统已实现）
 - **已完成验证**:
@@ -186,7 +190,7 @@ console.error
 ## 7. 建议下一步
 
 ### 立即行动 (P1-P2)
-1. 更新 Jest 配置以消除警告 (4.1.1)
+1. 更新 Jest 配置以消除警告 (4.1.1) - 删除 globals 部分
 2. 评估并修复 tsconfig 配置 (4.1.2)
 
 ### 短期改进 (P3)
@@ -206,7 +210,7 @@ ChatSight 项目整体状态良好：
 - ✅ 代码架构清晰，测试覆盖率良好
 - ✅ 项目进度正常，处于 Phase 4 阶段
 
-发现的问题主要是配置和工具链优化方面，不影响核心功能运行。建议优先处理 Jest 和 tsconfig 的配置警告。
+发现的问题主要是配置和工具链优化方面，不影响核心功能运行。建议优先处理 Jest 配置警告。
 
 ---
 
