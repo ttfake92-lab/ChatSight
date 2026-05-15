@@ -33,3 +33,6 @@ coverage/
 
 # Misc
 *.local
+
+# Dogfood output
+dogfood-output/

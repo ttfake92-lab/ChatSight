@@ -4,6 +4,7 @@ import { Plus, ToggleLeft, ToggleRight, Trash2, Settings, Edit } from 'lucide-re
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { Textarea } from './ui/textarea'
 import { Label } from './ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog'
 import { useSkillStore } from '../stores/skillStore'
@@ -60,6 +61,16 @@ export function SkillManager() {
     if (!editingSkill || !editingSkill.name.trim()) {
       toast.error('请输入 Skill 名称')
       return
+    }
+    for (const trigger of editingSkill.triggers) {
+      if (trigger.type === 'regex' && trigger.pattern) {
+        try {
+          new RegExp(trigger.pattern)
+        } catch {
+          toast.error(`正则表达式无效: ${trigger.pattern}`)
+          return
+        }
+      }
     }
     updateSkill(editingSkill.id, {
       name: editingSkill.name,
@@ -152,13 +163,17 @@ export function SkillManager() {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <button onClick={() => handleToggleSkill(skill.id, !skill.enabled)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleSkill(skill.id, !skill.enabled)}
+                    >
                       {skill.enabled ? (
                         <ToggleRight className="h-5 w-5 text-primary" />
                       ) : (
                         <ToggleLeft className="h-5 w-5 text-muted-foreground" />
                       )}
-                    </button>
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -221,7 +236,7 @@ export function SkillManager() {
             </div>
             <div className="space-y-2">
               <Label>描述</Label>
-              <Input
+              <Textarea
                 placeholder="Skill 描述"
                 value={newSkillDesc}
                 onChange={(e) => setNewSkillDesc(e.target.value)}
@@ -276,9 +291,7 @@ export function SkillManager() {
                   </div>
                   <div className="space-y-2">
                     <Label>描述</Label>
-                    <textarea
-                      className="w-full px-3 py-2 border rounded-md"
-                      rows={3}
+                    <Textarea
                       value={editingSkill.description}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingSkill({ ...editingSkill, description: e.target.value })}
                     />
@@ -309,7 +322,7 @@ export function SkillManager() {
                                   className="px-3 py-2 border rounded-md"
                                   value={trigger.type}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    const val = e.target.value as any
+                                    const val = e.target.value as SkillTrigger['type']
                                     const newTrigger: SkillTrigger = {
                                       type: val,
                                       keywords: val === 'keywords' ? [] : undefined,
@@ -409,7 +422,7 @@ export function SkillManager() {
                                   className="px-3 py-2 border rounded-md"
                                   value={action.type}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    const val = e.target.value as any
+                                    const val = e.target.value as SkillAction['type']
                                     const newAction: SkillAction = {
                                       type: val,
                                       title: val === 'notify' ? '通知' : undefined,
@@ -452,7 +465,7 @@ export function SkillManager() {
                                   <select
                                     className="px-3 py-2 border rounded-md"
                                     value={action.format || 'json'}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateAction(idx, { ...action, format: e.target.value as any })}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateAction(idx, { ...action, format: e.target.value as SkillAction['format'] })}
                                   >
                                     <option value="json">JSON</option>
                                     <option value="markdown">Markdown</option>

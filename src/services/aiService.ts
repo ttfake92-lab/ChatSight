@@ -47,10 +47,10 @@ class AIService {
     this.abortController = new AbortController()
 
     // 如果外部传入了 signal，合并到内部 controller
+    let onAbort: (() => void) | null = null
     if (signal) {
-      signal.addEventListener('abort', () => {
-        this.abortController?.abort()
-      })
+      onAbort = () => this.abortController?.abort()
+      signal.addEventListener('abort', onAbort)
       if (signal.aborted) {
         this.abortController.abort()
       }
@@ -73,6 +73,9 @@ class AIService {
         }
       }
     } finally {
+      if (onAbort && signal) {
+        signal.removeEventListener('abort', onAbort)
+      }
       this.abortController = null
     }
 

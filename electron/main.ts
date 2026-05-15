@@ -5,8 +5,8 @@ import { WeChatExecutor } from './wechat/executor'
 // esbuild 编译为 CJS 时，__dirname 全局可用
 declare const __dirname: string
 
-// 默认连接到 Vite 开发服务器
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+// 仅在开发模式下连接到 Vite 开发服务器
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
 let wechatExecutor: WeChatExecutor
 
@@ -43,7 +43,8 @@ function getErrorMessage(error: unknown): string {
 
 function getErrorCode(error: unknown): string | undefined {
   if (typeof error === 'object' && error !== null && 'code' in error) {
-    return String((error as Record<string, unknown>).code)
+    const code = (error as Record<string, unknown>).code
+    return code !== undefined ? String(code) : undefined
   }
   return undefined
 }

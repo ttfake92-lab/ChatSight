@@ -1,6 +1,6 @@
 {
   "name": "chatsight",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "微信聊天记录分析工具，支持 AI 智能摘要",
   "type": "module",
   "main": "dist-electron/main.cjs",
