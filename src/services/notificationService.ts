@@ -22,7 +22,7 @@ export class NotificationService {
     return !!(
       typeof window !== 'undefined' &&
       window.electronAPI &&
-      (window.electronAPI as any).notification
+      window.electronAPI.notification
     )
   }
 
@@ -35,12 +35,13 @@ export class NotificationService {
     }
 
     try {
-      await (window.electronAPI as any).notification.show(options)
+      await window.electronAPI!.notification.show(options)
       return { success: true }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
       return {
         success: false,
-        error: err.message || 'Unknown error'
+        error: message
       }
     }
   }

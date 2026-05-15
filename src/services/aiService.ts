@@ -4,6 +4,7 @@ import { buildSummaryPrompt } from '../lib/prompts'
 class AIService {
   private static instance: AIService
   private config: AIConfig | null = null
+  private abortController: AbortController | null = null
 
   private constructor() {}
 
@@ -12,6 +13,13 @@ class AIService {
       AIService.instance = new AIService()
     }
     return AIService.instance
+  }
+
+  public abortCurrent(): void {
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = null
+    }
   }
 
   public setConfig(config: AIConfig): void {
@@ -26,7 +34,7 @@ class AIService {
     return this.config !== null && !!this.config.apiKey
   }
 
-  public async generateSummary(messages: Message[]): Promise<AISummary> {
+  public async generateSummary(messages: Message[], signal?: AbortSignal): Promise<AISummary> {
     if (!this.config) {
       throw {
         code: 'INVALID_KEY' as const,
@@ -34,20 +42,38 @@ class AIService {
       }
     }
 
+    // 取消之前的请求
+    this.abortCurrent()
+    this.abortController = new AbortController()
+
+    // 如果外部传入了 signal，合并到内部 controller
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        this.abortController?.abort()
+      })
+      if (signal.aborted) {
+        this.abortController.abort()
+      }
+    }
+
     const prompt = buildSummaryPrompt(messages)
 
     let response: string
-    if (this.config.provider === 'openai') {
-      response = await this.callOpenAI(prompt)
-    } else if (this.config.provider === 'claude') {
-      response = await this.callClaude(prompt)
-    } else if (this.config.provider === 'minimax') {
-      response = await this.callMiniMax(prompt)
-    } else {
-      throw {
-        code: 'INVALID_KEY' as const,
-        message: `不支持的 AI 提供商: ${this.config.provider}`
+    try {
+      if (this.config.provider === 'openai') {
+        response = await this.callOpenAI(prompt)
+      } else if (this.config.provider === 'claude') {
+        response = await this.callClaude(prompt)
+      } else if (this.config.provider === 'minimax') {
+        response = await this.callMiniMax(prompt)
+      } else {
+        throw {
+          code: 'INVALID_KEY' as const,
+          message: `不支持的 AI 提供商: ${this.config.provider}`
+        }
       }
+    } finally {
+      this.abortController = null
     }
 
     return this.parseSummaryResponse(response)
@@ -81,7 +107,8 @@ class AIService {
           ],
           temperature: 0.7,
           max_tokens: 2000
-        })
+        }),
+        signal: this.abortController?.signal ?? undefined
       })
 
       if (!response.ok) {
@@ -147,7 +174,8 @@ class AIService {
               content: prompt
             }
           ]
-        })
+        }),
+        signal: this.abortController?.signal ?? undefined
       })
 
       if (!response.ok) {
@@ -212,7 +240,8 @@ class AIService {
           ],
           temperature: 0.7,
           max_tokens: 2000
-        })
+        }),
+        signal: this.abortController?.signal ?? undefined
       })
 
       if (!response.ok) {

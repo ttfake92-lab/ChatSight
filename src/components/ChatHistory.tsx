@@ -12,12 +12,6 @@ export function ChatHistory() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (selectedSession) {
-      fetchHistory(selectedSession.name)
-    }
-  }, [selectedSession, fetchHistory])
-
-  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 

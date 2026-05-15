@@ -68,3 +68,47 @@
 ***
 
 **当满足以下情况时，这些准则才算奏效：** 差异对比中的不必要改动更少了，因过度复杂化导致的重写更少了，以及澄清性质的问题是在实现之前、而非在犯错之后才提出的。
+
+---
+
+## 项目特定约定（ChatSight）
+
+### Electron 构建流程
+
+本项目使用 **esbuild** 编译 Electron 主进程和 preload 脚本，而非 `vite-plugin-electron`。
+
+- **主进程入口**: `dist-electron/main.cjs`（CJS 格式）
+- **Preload 脚本**: `dist-electron/preload.cjs`（CJS 格式）
+- **构建命令**: `npm run electron:build-main`
+  - 使用 esbuild 将 `electron/main.ts` 和 `electron/preload.ts` 分别打包为 CJS
+  - `--external:electron` 排除 electron 模块
+- **开发启动**: `npm run electron:dev`
+  - 先执行 `electron:build-main`
+  - 然后并行启动 Vite dev server（port 5180）和 Electron
+  - **必须** 前缀 `ELECTRON_RUN_AS_NODE=` 环境变量（置空），防止 VSCode 继承该变量导致 `require('electron')` 返回二进制路径
+
+**为什么不用 vite-plugin-electron**: 该插件在 `package.json` `"type": "module"` 时会将 preload 编译为 ESM（`import` 语法），但 Electron 通过 `require()` 加载 preload，导致模块系统不匹配。esbuild 直接编译为 CJS 规避了这个问题。
+
+### IPC 通信规范
+
+所有 IPC 调用通过 `window.electronAPI` 暴露：
+
+- `window.electronAPI.wechat.*` — wechat-cli 相关（sessions, history, search, stats, contacts, new-messages）
+- `window.electronAPI.notification.show()` — 桌面通知
+- `window.electronAPI.safeStorage.encrypt/decrypt()` — API Key 加密（使用 Electron safeStorage）
+
+返回格式统一为 `{ data?, error?, code? }`。调用方需检查 `result.error`。
+
+### API Key 安全存储
+
+`src/stores/configStore.ts` 的 `loadConfig`/`saveConfig` 已改为 **async**，通过 IPC 调用 `safeStorage.encrypt/decrypt`：
+
+- 保存时：明文 apiKey → IPC encrypt → base64 密文 → localStorage
+- 读取时：localStorage 密文 → IPC decrypt → 明文 apiKey
+- 向后兼容：解密失败时保持原值（视为明文旧数据）
+
+### 新增文件位置
+
+- 全局 React Context: `src/contexts/`（如 `PollingContext.tsx`）
+- Error Boundary: `src/components/ErrorBoundary.tsx`
+- 服务类: `src/services/`（保持单例模式，但优先通过 Context 注入）

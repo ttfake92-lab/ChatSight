@@ -210,6 +210,14 @@ npm run electron:build
 
 ## 版本历史
 
+### v0.2.0 (2026-05-15)
+
+- 🛡️ **API Key 安全加密** - 使用 Electron safeStorage 加密存储 API Key，防止 XSS 泄露
+- 🧱 **Error Boundary** - 新增全局错误边界，组件崩溃不再白屏，提供降级 UI 和一键刷新
+- ⚡ **请求取消机制** - AI 摘要生成支持 AbortController，切换会话自动取消未完成的请求
+- 🔄 **PollingService 重构** - 模块级单例改为 Class + React Context，热重载状态正确重置
+- 🔧 **构建系统优化** - 改用 esbuild 编译 Electron 主进程，解决 ESM/CJS 模块兼容问题
+
 ### v0.1.0 (2026-05-11)
 
 - ✨ 初始版本发布

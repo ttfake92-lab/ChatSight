@@ -37,6 +37,7 @@ export class WeChatExecutor {
 
   async getHistory(sessionName: string, limit: number = 100): Promise<Message[]> {
     this.ensureInitialized()
+    this.validateArg(sessionName, 'sessionName')
     try {
       const output = await this.executeCommand(['history', sessionName, '--limit', String(limit)])
       const result = this.parser.parseHistory(output)
@@ -48,6 +49,8 @@ export class WeChatExecutor {
 
   async search(keyword: string, sessionName?: string): Promise<SearchResult[]> {
     this.ensureInitialized()
+    this.validateArg(keyword, 'keyword')
+    if (sessionName) this.validateArg(sessionName, 'sessionName')
     try {
       const args = ['search', keyword]
       if (sessionName) {
@@ -62,6 +65,7 @@ export class WeChatExecutor {
 
   async getStats(sessionName?: string): Promise<Stats> {
     this.ensureInitialized()
+    if (sessionName) this.validateArg(sessionName, 'sessionName')
     try {
       const args = sessionName ? ['stats', sessionName] : ['stats']
       const output = await this.executeCommand(args)
@@ -73,6 +77,7 @@ export class WeChatExecutor {
 
   async getContacts(query?: string): Promise<Contact[]> {
     this.ensureInitialized()
+    if (query) this.validateArg(query, 'query')
     try {
       const args = query ? ['contacts', '--query', query] : ['contacts']
       const output = await this.executeCommand(args)
@@ -84,6 +89,7 @@ export class WeChatExecutor {
 
   async getNewMessages(sinceTimestamp?: string): Promise<Message[]> {
     this.ensureInitialized()
+    if (sinceTimestamp) this.validateArg(sinceTimestamp, 'sinceTimestamp')
     try {
       const args = ['new-messages']
       if (sinceTimestamp) {
@@ -96,28 +102,47 @@ export class WeChatExecutor {
     }
   }
 
+  private validateArg(arg: string, name: string): void {
+    if (arg.includes('\0')) {
+      throw this.createError('EXECUTION_FAILED', `参数包含空字符: ${name}`)
+    }
+  }
+
   private async executeCommand(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const command = this.commandPrefix.split(' ')[0]
-      const commandArgs = this.commandPrefix.split(' ').slice(1).concat(args)
-      
+      const commandParts = this.commandPrefix.split(' ')
+      const command = commandParts[0]
+      const commandArgs = commandParts.slice(1).concat(args)
+
       const process = spawn(command, commandArgs, {
-        shell: true,
+        shell: false,
         windowsHide: true
       })
 
       let stdout = ''
       let stderr = ''
       let timeoutId: NodeJS.Timeout
+      let killed = false
 
       const cleanup = () => {
         if (timeoutId) clearTimeout(timeoutId)
         process.removeAllListeners()
       }
 
+      const forceKill = () => {
+        if (!killed) {
+          killed = true
+          try {
+            process.kill('SIGKILL')
+          } catch {
+            // 进程可能已退出
+          }
+        }
+      }
+
       timeoutId = setTimeout(() => {
         cleanup()
-        process.kill()
+        forceKill()
         reject(this.createError('TIMEOUT', `命令执行超时: ${this.commandPrefix} ${args.join(' ')}`))
       }, this.timeout)
 
@@ -131,12 +156,12 @@ export class WeChatExecutor {
 
       process.on('close', (code) => {
         cleanup()
-        
+
         if (code === 0) {
           resolve(stdout.trim())
         } else {
           const errorMessage = stderr.trim() || stdout.trim() || `命令执行失败，退出码: ${code}`
-          
+
           if (errorMessage.includes('not found') || errorMessage.includes('未找到')) {
             reject(this.createError('NOT_FOUND', `wechat-cli 未找到或未安装`))
           } else if (errorMessage.includes('not initialized')) {
@@ -149,6 +174,7 @@ export class WeChatExecutor {
 
       process.on('error', (error) => {
         cleanup()
+        forceKill()
         reject(this.createError('EXECUTION_FAILED', `命令执行错误: ${error.message}`))
       })
     })

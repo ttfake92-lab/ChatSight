@@ -1,7 +1,7 @@
 import type { Message } from '../types'
-import { startPolling, stopPolling, isPolling } from './pollingService'
+import { PollingService } from './pollingService'
 
-describe('pollingService', () => {
+describe('PollingService', () => {
   const mockMessages: Message[] = [
     {
       id: '1',
@@ -12,15 +12,17 @@ describe('pollingService', () => {
     }
   ]
 
+  let service: PollingService
   let originalWindow: typeof globalThis.window
 
   beforeEach(() => {
     jest.useFakeTimers()
     originalWindow = globalThis.window
+    service = new PollingService()
   })
 
   afterEach(() => {
-    stopPolling()
+    service.stopPolling()
     jest.useRealTimers()
     globalThis.window = originalWindow
     jest.clearAllMocks()
@@ -46,7 +48,7 @@ describe('pollingService', () => {
       const getNewMessagesMock = jest.fn().mockResolvedValue(mockMessages)
       mockWindow(getNewMessagesMock)
 
-      startPolling()
+      service.startPolling()
       await flushTimersAndPromises()
       expect(getNewMessagesMock).toHaveBeenCalledTimes(1)
     })
@@ -55,7 +57,7 @@ describe('pollingService', () => {
       const getNewMessagesMock = jest.fn().mockResolvedValue(mockMessages)
       mockWindow(getNewMessagesMock)
 
-      startPolling({ interval: 60000 })
+      service.startPolling({ interval: 60000 })
       await flushTimersAndPromises()
       jest.advanceTimersByTime(60000)
       await flushTimersAndPromises()
@@ -67,7 +69,7 @@ describe('pollingService', () => {
       const onMessagesMock = jest.fn()
       mockWindow(getNewMessagesMock)
 
-      startPolling({ onMessages: onMessagesMock })
+      service.startPolling({ onMessages: onMessagesMock })
       await flushTimersAndPromises()
       jest.advanceTimersByTime(30000)
       await flushTimersAndPromises()
@@ -80,7 +82,7 @@ describe('pollingService', () => {
       const onErrorMock = jest.fn()
       mockWindow(getNewMessagesMock)
 
-      startPolling({ onError: onErrorMock })
+      service.startPolling({ onError: onErrorMock })
       await flushTimersAndPromises()
       jest.advanceTimersByTime(30000)
       await flushTimersAndPromises()
@@ -93,21 +95,21 @@ describe('pollingService', () => {
       const getNewMessagesMock = jest.fn().mockResolvedValue(mockMessages)
       mockWindow(getNewMessagesMock)
 
-      startPolling()
+      service.startPolling()
       await flushTimersAndPromises()
-      stopPolling()
+      service.stopPolling()
       jest.advanceTimersByTime(60000)
       expect(getNewMessagesMock).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('isPolling', () => {
+  describe('getIsPolling', () => {
     it('should return true when polling', () => {
       const getNewMessagesMock = jest.fn().mockResolvedValue(mockMessages)
       mockWindow(getNewMessagesMock)
 
-      startPolling()
-      expect(isPolling()).toBe(true)
+      service.startPolling()
+      expect(service.getIsPolling()).toBe(true)
     })
   })
 })

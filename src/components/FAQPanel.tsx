@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MessageSquare, Download, Trash2, Plus, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { FAQItem, Message } from '../types'
 import { faqService } from '../services/faqService'
 import { Button } from './ui/button'
@@ -31,7 +32,7 @@ export function FAQPanel({ sessionName, messages }: FAQPanelProps) {
 
   const handleExtractFAQs = async () => {
     if (messages.length === 0) {
-      alert('当前会话没有消息，无法提取 FAQ')
+      toast.info('当前会话没有消息，无法提取 FAQ')
       return
     }
 
@@ -39,9 +40,10 @@ export function FAQPanel({ sessionName, messages }: FAQPanelProps) {
     try {
       const extractedFAQs = await faqService.extractFAQsFromMessages(sessionName, messages)
       setFaqs(extractedFAQs)
+      toast.success(`成功提取 ${extractedFAQs.length} 个 FAQ`)
     } catch (error) {
       console.error('提取 FAQ 失败:', error)
-      alert(error instanceof Error ? error.message : '提取 FAQ 失败，请检查 AI 配置')
+      toast.error(error instanceof Error ? error.message : '提取 FAQ 失败，请检查 AI 配置')
     } finally {
       setIsExtracting(false)
     }
@@ -102,8 +104,9 @@ export function FAQPanel({ sessionName, messages }: FAQPanelProps) {
       a.download = filename
       a.click()
       URL.revokeObjectURL(url)
+      toast.success('导出 JSON 成功')
     } catch (error) {
-      alert(error instanceof Error ? error.message : '导出失败')
+      toast.error(error instanceof Error ? error.message : '导出失败')
     }
   }
 
@@ -118,8 +121,9 @@ export function FAQPanel({ sessionName, messages }: FAQPanelProps) {
       a.download = filename
       a.click()
       URL.revokeObjectURL(url)
+      toast.success('导出 Markdown 成功')
     } catch (error) {
-      alert(error instanceof Error ? error.message : '导出失败')
+      toast.error(error instanceof Error ? error.message : '导出失败')
     }
   }
 

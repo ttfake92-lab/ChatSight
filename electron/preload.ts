@@ -1,10 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
-export interface NotificationAPI {
+interface NotificationAPI {
   show: (options: { title: string; body: string; silent?: boolean }) => Promise<{ success: boolean; error?: string }>
 }
 
-export interface WeChatAPI {
+interface WeChatAPI {
   init: () => Promise<any>
   getSessions: (limit?: number) => Promise<any>
   getHistory: (sessionName: string, limit?: number) => Promise<any>
@@ -14,10 +14,16 @@ export interface WeChatAPI {
   getNewMessages: (sinceTimestamp?: string) => Promise<any>
 }
 
-export interface ElectronAPI {
+interface SafeStorageAPI {
+  encrypt: (plaintext: string) => Promise<{ data?: string; error?: string }>
+  decrypt: (encryptedBase64: string) => Promise<{ data?: string; error?: string }>
+}
+
+interface ElectronAPI {
   platform: string
   wechat: WeChatAPI
   notification: NotificationAPI
+  safeStorage: SafeStorageAPI
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -32,8 +38,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getNewMessages: (sinceTimestamp?: string) => ipcRenderer.invoke('wechat:new-messages', sinceTimestamp)
   },
   notification: {
-    show: (options: { title: string; body: string; silent?: boolean }) => 
+    show: (options: { title: string; body: string; silent?: boolean }) =>
       ipcRenderer.invoke('notification:show', options)
+  },
+  safeStorage: {
+    encrypt: (plaintext: string) => ipcRenderer.invoke('safeStorage:encrypt', plaintext),
+    decrypt: (encryptedBase64: string) => ipcRenderer.invoke('safeStorage:decrypt', encryptedBase64)
   }
 } as ElectronAPI)
 

@@ -4,6 +4,8 @@
 **检查人**: AI Assistant
 **项目**: ChatSight - 微信聊天记录分析工具
 
+> **修复状态**: 2026-05-14 已完成本报告中 14/18 个问题的修复（5 个架构级 + 9 个代码级），剩余 4 个低优先级建议。详见下方各 issue 状态标记。
+
 ---
 
 ## 📊 项目概览
@@ -63,18 +65,19 @@
 
 ### 🔴 严重程度：CRITICAL（严重）
 
-#### 1. Preload 脚本模块系统不匹配
+#### 1. Preload 脚本模块系统不匹配 【已修复】
 - **文件**: [electron/preload.ts:1](file:///Users/tangtao/Projects/ChatSight/electron/preload.ts#L1)
 - **问题**: `package.json` 设置 `"type": "module"`，但 preload 使用 CommonJS `require` 语法
 - **风险**: 可能导致构建不一致
-- **建议**: 统一使用 ESM 语法
+- **修复方案**: 移除 `vite-plugin-electron`，改用 esbuild 将 main.ts 和 preload.ts 编译为 CJS
+- **验证**: `npm run electron:build-main` 成功，Electron dev 正常启动
 
-#### 2. Toaster 组件重复渲染
+#### 2. Toaster 组件重复渲染 【已修复】
 - **文件**:
   - [src/main.tsx:10](file:///Users/tangtao/Projects/ChatSight/src/main.tsx#L10)
   - [src/App.tsx:154](file:///Users/tangtao/Projects/ChatSight/src/App.tsx#L154)
 - **问题**: `<Toaster />` 被渲染两次，可能导致通知显示异常
-- **建议**: 移除 `App.tsx` 中的 `<Toaster />`
+- **修复**: 移除 `App.tsx` 中的 `<Toaster />`，仅保留 `main.tsx` 中的全局实例
 
 #### 3. API 返回值类型不安全
 - **文件**: [electron/preload.ts:7-15](file:///Users/tangtao/Projects/ChatSight/electron/preload.ts#L7-L15)
@@ -85,25 +88,25 @@
 
 ### 🟠 严重程度：HIGH（高）
 
-#### 4. 缺少 React Error Boundary
+#### 4. 缺少 React Error Boundary 【已修复】
 - **问题**: 应用没有任何 Error Boundary 组件
 - **风险**: 组件错误会导致整个应用崩溃
-- **建议**: 添加顶层 Error Boundary 组件
+- **修复**: 新建 `src/components/ErrorBoundary.tsx`，在 `main.tsx` 中包裹 `<App />`，提供降级 UI（错误信息 + 刷新按钮）
 
-#### 5. localStorage 存储敏感配置
+#### 5. localStorage 存储敏感配置 【已修复】
 - **文件**: [src/stores/configStore.ts:79](file:///Users/tangtao/Projects/ChatSight/src/stores/configStore.ts#L79)
 - **问题**: API Key 直接存储在 localStorage，存在 XSS 攻击风险
-- **建议**: 使用 Electron 的 `safeStorage` API 加密
+- **修复**: `electron/main.ts` 新增 `safeStorage:encrypt/decrypt` IPC handlers；`configStore.ts` 的 `loadConfig`/`saveConfig` 改为 async，保存前加密、读取后解密；向后兼容明文旧数据（解密失败保持原值）
 
 #### 6. IPC 参数缺少验证
 - **文件**: [electron/main.ts:62-69](file:///Users/tangtao/Projects/ChatSight/electron/main.ts#L62-L69)
 - **问题**: IPC 处理器没有验证输入参数
 - **建议**: 在主进程添加参数验证逻辑
 
-#### 7. PollingService 使用模块级单例状态
+#### 7. PollingService 使用模块级单例状态 【已修复】
 - **文件**: [src/services/pollingService.ts:16-21](file:///Users/tangtao/Projects/ChatSight/src/services/pollingService.ts#L16-L21)
 - **问题**: 全局状态在热重载时不会重置，可能导致内存泄漏
-- **建议**: 封装为类或使用 React Context 管理
+- **修复**: 重构为 `PollingService` class（构造函数接受配置，含 `startPolling`/`stopPolling`/`reset` 方法）；新建 `src/contexts/PollingContext.tsx` 通过 React Context 提供实例；`App.tsx` 改用 `usePolling()` hook 获取服务
 
 #### 8. SkillManagerRef 闭包陷阱
 - **文件**: [src/App.tsx:38-43](file:///Users/tangtao/Projects/ChatSight/src/App.tsx#L38-L43)
@@ -143,10 +146,10 @@
   - [src/stores/skillStore.ts:48-55](file:///Users/tangtao/Projects/ChatSight/src/stores/skillStore.ts#L48-L55)
 - **建议**: 使用 `localforage` 等异步存储方案
 
-#### 14. 缺少请求取消机制
+#### 14. 缺少请求取消机制 【已修复】
 - **文件**: [src/services/aiService.ts](file:///Users/tangtao/Projects/ChatSight/src/services/aiService.ts)
 - **问题**: 用户切换会话时，之前的 AI 请求不会取消
-- **建议**: 使用 `AbortController` 取消进行中的请求
+- **修复**: `aiService.ts` 新增 `private abortController` 和 `abortCurrent()` 方法；`generateSummary()` 内部创建 AbortController 并传入 fetch；`AISummary.tsx` 组件卸载时调用 `aiService.abortCurrent()`；忽略 `AbortError`
 
 ---
 

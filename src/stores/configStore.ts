@@ -54,17 +54,28 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
 
   setConfigured: (isConfigured) => set({ isConfigured }),
 
-  loadConfig: () => {
+  loadConfig: async () => {
     try {
       const stored = localStorage.getItem(AI_CONFIG_KEY)
       if (stored) {
         const parsed = JSON.parse(stored) as AIConfig
+        // 尝试解密 apiKey；失败则视为明文（向后兼容旧数据）
+        if (parsed.apiKey && window.electronAPI?.safeStorage) {
+          try {
+            const result = await window.electronAPI.safeStorage.decrypt(parsed.apiKey)
+            if (result.data) {
+              parsed.apiKey = result.data
+            }
+          } catch {
+            // 解密失败：保持原值，视为明文存储的旧数据
+          }
+        }
         set({ aiConfig: parsed, isConfigured: true })
       } else {
         const defaultConfig = getDefaultConfig()
-        set({ 
-          aiConfig: defaultConfig, 
-          isConfigured: !!defaultConfig.apiKey 
+        set({
+          aiConfig: defaultConfig,
+          isConfigured: !!defaultConfig.apiKey
         })
       }
     } catch {
@@ -73,10 +84,19 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
     }
   },
 
-  saveConfig: () => {
+  saveConfig: async () => {
     const { aiConfig } = get()
     try {
-      localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(aiConfig))
+      let configToSave = { ...aiConfig }
+      if (aiConfig.apiKey && window.electronAPI?.safeStorage) {
+        const result = await window.electronAPI.safeStorage.encrypt(aiConfig.apiKey)
+        if (result.data) {
+          configToSave.apiKey = result.data
+        } else {
+          console.warn('API Key 加密失败，将以明文存储')
+        }
+      }
+      localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(configToSave))
       set({ isConfigured: true })
     } catch (err) {
       console.error('保存配置失败')

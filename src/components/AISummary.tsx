@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Sparkles,
   TrendingUp,
@@ -30,7 +30,15 @@ export function AISummary() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    return () => {
+      aiService.abortCurrent()
+    }
+  }, [])
+
   const handleGenerateSummary = async () => {
+    // 取消之前的请求
+    aiService.abortCurrent()
     // 检查是否有消息
     if (messages.length === 0) {
       setError('没有可分析的聊天记录')
@@ -51,6 +59,11 @@ export function AISummary() {
       const result = await aiService.generateSummary(messages)
       setSummary(result)
     } catch (err) {
+      // 忽略用户主动取消的请求
+      if (err instanceof Error && err.name === 'AbortError') {
+        return
+      }
+
       const aiError = err as AIError
       const errorMessage = aiError.message || '生成摘要失败，请重试'
 

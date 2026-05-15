@@ -4,20 +4,40 @@
 
 项目完成 - 所有阶段交付完成
 
+## 未提交变更（2026-05-14）
+
+基于诊断报告修复了 5 个架构级问题，涉及 18 个文件的修改：
+
+1. **Error Boundary** - 新增 `src/components/ErrorBoundary.tsx`，包裹根组件防止白屏崩溃
+2. **AbortController** - `aiService.ts` 支持请求取消，`AISummary.tsx` 组件卸载时自动取消
+3. **PollingService 类封装** - 将模块级单例改为 `PollingService` class + `PollingContext` React Context
+4. **safeStorage 加密** - `configStore.ts` 通过 IPC 加密/解密 API Key，向后兼容明文旧数据
+5. **构建系统重构** - 移除 `vite-plugin-electron`，改用 esbuild 编译 main/preload 为 CJS
+
 ## Current Active Task
 
-无 - 项目开发已完成
+无 - 诊断修复已完成，待用户验证后提交
 
 ## Current Active Issue
 
 无
 
-## Last Known Verification (2026-05-13)
+## Last Known Verification (2026-05-14)
 
 - `npm test`: ✅ 成功 (60 tests passed)
 - `npx tsc --noEmit`: ✅ 成功
 - `npm run build`: ✅ 成功
-- Git 工作区: clean
+- Electron dev 启动: ✅ 成功 (`npm run electron:dev` 可正常启动)
+- Git 工作区: 18 个文件有未提交变更（诊断修复）
+
+## 续跑验证 (2026-05-14 续跑)
+
+- `npm test`: ✅ 成功 (60 tests passed, 10 test suites)
+- `npx tsc --noEmit`: ✅ 成功
+- `npm run build`: ✅ 成功
+- `npm run electron:build-main`: ✅ 成功 (esbuild 编译 main.cjs + preload.cjs)
+- Electron dev 启动: ✅ 成功 (port 5180, preload 正常加载)
+- Git 工作区: 18 个文件修改 + 2 个新增文件 + 1 个未跟踪目录
 
 ## 续跑验证 (2026-05-13 续跑)
 
@@ -73,6 +93,8 @@
 
 ## Done Log
 
+- 2026-05-14: 完成诊断报告 5 个架构级修复 - Error Boundary、AbortController、PollingService 类封装、safeStorage API Key 加密、构建系统重构（esbuild 替代 vite-plugin-electron），所有测试和类型检查通过，Electron dev 可正常启动
+- 2026-05-14: 诊断报告审查完成 - 共 18 个问题，已修复 14 个（5 个架构级 + 9 个代码级），剩余 4 个低优先级建议未处理
 - 2026-05-13: 完成项目最终验证 - npm test (60 passed)、npm run build、tsc --noEmit 全部通过，项目开发完成
 - 2026-05-13: 完成 Phase 4 Task 4.3.5 - 完善 SkillManager.tsx 组件，添加编辑和配置功能，包括基本信息编辑、触发器配置（关键词/正则/成员/时间）、动作配置（通知/日志/AI摘要/导出），所有验证通过
 - 2026-05-13: Phase 4 验收通过 - npm test (60 passed)、npm run build、tsc --noEmit 均验证通过

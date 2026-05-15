@@ -61,19 +61,25 @@ export interface NotificationAPI {
 }
 
 export interface WeChatAPI {
-  init: () => Promise<any>
-  getSessions: (limit?: number) => Promise<any>
-  getHistory: (sessionName: string, limit?: number) => Promise<any>
-  search: (keyword: string, sessionName?: string) => Promise<any>
-  getStats: (sessionName?: string) => Promise<any>
-  getContacts: (query?: string) => Promise<any>
-  getNewMessages: (sinceTimestamp?: string) => Promise<any>
+  init: () => Promise<unknown>
+  getSessions: (limit?: number) => Promise<unknown>
+  getHistory: (sessionName: string, limit?: number) => Promise<unknown>
+  search: (keyword: string, sessionName?: string) => Promise<unknown>
+  getStats: (sessionName?: string) => Promise<unknown>
+  getContacts: (query?: string) => Promise<unknown>
+  getNewMessages: (sinceTimestamp?: string) => Promise<unknown>
+}
+
+export interface SafeStorageAPI {
+  encrypt: (plaintext: string) => Promise<{ data?: string; error?: string }>
+  decrypt: (encryptedBase64: string) => Promise<{ data?: string; error?: string }>
 }
 
 export interface ElectronAPI {
   platform: string
   wechat: WeChatAPI
   notification: NotificationAPI
+  safeStorage: SafeStorageAPI
 }
 
 declare global {

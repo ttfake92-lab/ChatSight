@@ -31,7 +31,7 @@ export function ActivityLeaderboard({ members = [], limit = 10 }: ActivityLeader
         {hasData ? (
           <div className="space-y-3">
             {sortedMembers.map((member, index) => (
-              <div key={member.name} className="flex items-center gap-3">
+              <div key={`${member.name}-${index}`} className="flex items-center gap-3">
                 <span
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                     index === 0

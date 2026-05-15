@@ -6,13 +6,12 @@ import { AISummary } from './components/AISummary'
 import { FAQPanel } from './components/FAQPanel'
 import { SkillManager } from './components/SkillManager'
 import { SettingsDialog } from './components/SettingsDialog'
-import { Toaster } from './components/ui/sonner'
 import { Button } from './components/ui/button'
 import { useConfigStore } from './stores/configStore'
 import { useSessionStore } from './stores/sessionStore'
 import { useMessageStore } from './stores/messageStore'
 import { useSkillStore } from './stores/skillStore'
-import { pollingService } from './services/pollingService'
+import { usePolling } from './contexts/PollingContext'
 import { SkillManager as SkillManagerService } from './services/skillManager'
 import { Sparkles, MessageSquare, Settings } from 'lucide-react'
 import type { Message } from './types'
@@ -22,6 +21,7 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<'summary' | 'faq' | 'skills'>('summary')
   const skillManagerRef = useRef<SkillManagerService | null>(null)
+  const pollingService = usePolling()
 
   const { loadConfig } = useConfigStore()
   const { fetchSessions } = useSessionStore()
@@ -57,7 +57,7 @@ function App() {
     return () => {
       pollingService.stopPolling()
     }
-  }, [selectedSession, appendMessages])
+  }, [selectedSession, appendMessages, pollingService])
 
   useEffect(() => {
     if (selectedSession) {
@@ -151,7 +151,6 @@ function App() {
       </div>
 
       <SettingsDialog open={showSettings} onOpenChange={setShowSettings} />
-      <Toaster />
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { formatNumber, getPeakHour, getTopMembers, calculateEngagementRate } from '../lib/dashboardUtils'
 import { DashboardStats } from '../lib/dashboardUtils'
@@ -12,8 +11,6 @@ interface DashboardProps {
 }
 
 export function Dashboard({ stats, isLoading, error, onRefresh }: DashboardProps) {
-  const [selectedSession] = useState<string | null>(null)
-
   const defaultStats: DashboardStats = {
     totalMessages: 0,
     totalMembers: 0,
@@ -27,16 +24,6 @@ export function Dashboard({ stats, isLoading, error, onRefresh }: DashboardProps
   const peakHour = getPeakHour(displayStats.hourlyDistribution)
   const topMembers = getTopMembers(displayStats.activeMembers, 5)
   const engagementRate = calculateEngagementRate(displayStats)
-
-  useEffect(() => {
-    if (window.electronAPI?.wechat?.getStats) {
-      window.electronAPI.wechat.getStats(selectedSession || undefined).then((result: any) => {
-        if (result && !result.error) {
-          console.log('Stats loaded:', result)
-        }
-      }).catch(console.error)
-    }
-  }, [selectedSession])
 
   if (isLoading) {
     return (

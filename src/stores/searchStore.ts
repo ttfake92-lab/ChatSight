@@ -44,9 +44,10 @@ export const useSearchStore = create<SearchState>((set) => ({
 
     try {
       const result = await window.electronAPI.wechat.search(keyword, sessionName)
+      const apiResult = result as { error?: string }
 
-      if (result && result.error) {
-        set({ error: result.error, isSearching: false })
+      if (apiResult && apiResult.error) {
+        set({ error: apiResult.error, isSearching: false })
         return
       }
 

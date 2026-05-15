@@ -1,102 +1,88 @@
 import type { Message } from '../types'
 
+interface APIResult {
+  error?: string
+  code?: string
+}
+
 interface PollingServiceOptions {
   interval?: number
   onMessages?: (messages: Message[]) => void
   onError?: (error: unknown) => void
 }
 
-interface PollingState {
-  isPolling: boolean
-  intervalId: ReturnType<typeof setInterval> | null
-  lastTimestamp: string | null
-  options: PollingServiceOptions
-}
+export class PollingService {
+  private isPolling: boolean = false
+  private intervalId: ReturnType<typeof setInterval> | null = null
+  private lastTimestamp: string | null = null
+  private options: PollingServiceOptions = {}
+  private readonly defaultInterval: number = 30000
 
-const state: PollingState = {
-  isPolling: false,
-  intervalId: null,
-  lastTimestamp: null,
-  options: {}
-}
-
-const DEFAULT_INTERVAL = 30000
-
-function startPolling(options: PollingServiceOptions = {}): void {
-  if (state.isPolling) {
-    return
-  }
-
-  state.options = options
-  const interval = options.interval || DEFAULT_INTERVAL
-
-  const poll = async () => {
-    if (!window.electronAPI?.wechat?.getNewMessages) {
+  startPolling(options: PollingServiceOptions = {}): void {
+    if (this.isPolling) {
       return
     }
 
-    try {
-      const result = await window.electronAPI.wechat.getNewMessages(state.lastTimestamp || undefined)
+    this.options = options
+    const interval = options.interval || this.defaultInterval
 
-      if (result && !result.error) {
-        const messages = result as Message[]
-
-        if (messages.length > 0) {
-          state.lastTimestamp = messages[messages.length - 1].timestamp
-
-          if (options.onMessages) {
-            options.onMessages(messages)
-          }
-        }
-      } else if (result?.error && options.onError) {
-        options.onError(result.error)
+    const poll = async () => {
+      if (!window.electronAPI?.wechat?.getNewMessages) {
+        return
       }
-    } catch (error) {
-      if (options.onError) {
-        options.onError(error)
+
+      try {
+        const result = await window.electronAPI.wechat.getNewMessages(this.lastTimestamp || undefined)
+
+        const apiResult = result as APIResult
+        if (apiResult && !apiResult.error) {
+          const messages = result as Message[]
+
+          if (messages.length > 0) {
+            this.lastTimestamp = messages[messages.length - 1].timestamp
+
+            if (this.options.onMessages) {
+              this.options.onMessages(messages)
+            }
+          }
+        } else if (apiResult?.error && this.options.onError) {
+          this.options.onError(apiResult.error)
+        }
+      } catch (error) {
+        if (this.options.onError) {
+          this.options.onError(error)
+        }
       }
     }
+
+    poll()
+
+    this.intervalId = setInterval(poll, interval)
+    this.isPolling = true
   }
 
-  poll()
-
-  state.intervalId = setInterval(poll, interval)
-  state.isPolling = true
-}
-
-function stopPolling(): void {
-  if (state.intervalId) {
-    clearInterval(state.intervalId)
-    state.intervalId = null
+  stopPolling(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
+    this.isPolling = false
+    this.options = {}
   }
-  state.isPolling = false
-  state.options = {}
-}
 
-function isPolling(): boolean {
-  return state.isPolling
-}
-
-function getLastTimestamp(): string | null {
-  return state.lastTimestamp
-}
-
-function resetState(): void {
-  if (state.intervalId) {
-    clearInterval(state.intervalId)
+  getIsPolling(): boolean {
+    return this.isPolling
   }
-  state.isPolling = false
-  state.intervalId = null
-  state.lastTimestamp = null
-  state.options = {}
+
+  getLastTimestamp(): string | null {
+    return this.lastTimestamp
+  }
+
+  reset(): void {
+    this.stopPolling()
+    this.lastTimestamp = null
+  }
 }
 
-export const pollingService = {
-  startPolling,
-  stopPolling,
-  isPolling,
-  getLastTimestamp,
-  resetState
-}
-
-export { startPolling, stopPolling, isPolling }
+// 为了向后兼容，保留一个默认实例的导出
+export const pollingService = new PollingService()

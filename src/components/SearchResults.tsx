@@ -34,9 +34,9 @@ export function SearchResults({ className = '', onBack, onSelectMessage }: Searc
     }
   }
 
-  // 当没有选中的搜索结果
+  // 按选中会话过滤搜索结果
   const displayedResults = useMemo(() => {
-    if (!selectedSession) {
+    if (selectedSession) {
       return results.filter((r) => r.session === selectedSession)
     }
     return results

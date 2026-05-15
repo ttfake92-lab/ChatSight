@@ -1,6 +1,9 @@
-import { app, BrowserWindow, ipcMain, Notification } from 'electron'
+import { app, BrowserWindow, ipcMain, Notification, safeStorage } from 'electron'
 import path from 'path'
 import { WeChatExecutor } from './wechat/executor'
+
+// esbuild 编译为 CJS 时，__dirname 全局可用
+declare const __dirname: string
 
 // 默认连接到 Vite 开发服务器
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
@@ -13,7 +16,7 @@ function createWindow() {
     height: 800,
     title: 'ChatSight',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       sandbox: false,
       nodeIntegration: false,
       contextIsolation: true,
@@ -34,20 +37,31 @@ function initializeWeChatExecutor() {
   wechatExecutor = new WeChatExecutor(commandPrefix, timeout)
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function getErrorCode(error: unknown): string | undefined {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    return String((error as Record<string, unknown>).code)
+  }
+  return undefined
+}
+
 function registerWeChatHandlers() {
   ipcMain.handle('wechat:init', async () => {
     try {
       return await wechatExecutor.init()
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
   ipcMain.handle('wechat:sessions', async (_, limit?: number) => {
     try {
       return await wechatExecutor.getSessions(limit)
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
@@ -55,40 +69,40 @@ function registerWeChatHandlers() {
     try {
       const result = await wechatExecutor.getHistory(sessionName, limit)
       return result
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
   ipcMain.handle('wechat:search', async (_, keyword: string, sessionName?: string) => {
     try {
       return await wechatExecutor.search(keyword, sessionName)
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
   ipcMain.handle('wechat:stats', async (_, sessionName?: string) => {
     try {
       return await wechatExecutor.getStats(sessionName)
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
   ipcMain.handle('wechat:contacts', async (_, query?: string) => {
     try {
       return await wechatExecutor.getContacts(query)
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 
   ipcMain.handle('wechat:new-messages', async (_, sinceTimestamp?: string) => {
     try {
       return await wechatExecutor.getNewMessages(sinceTimestamp)
-    } catch (error: any) {
-      return { error: error.message, code: error.code }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
 }
@@ -105,11 +119,37 @@ function registerNotificationHandlers() {
         body: options.body,
         silent: options.silent || false
       })
-      
+
       notification.show()
       return { success: true }
-    } catch (err: any) {
-      return { success: false, error: err.message }
+    } catch (err: unknown) {
+      return { success: false, error: getErrorMessage(err) }
+    }
+  })
+}
+
+function registerSafeStorageHandlers() {
+  ipcMain.handle('safeStorage:encrypt', async (_, plaintext: string) => {
+    try {
+      if (!safeStorage.isEncryptionAvailable()) {
+        return { error: 'Encryption is not available on this system' }
+      }
+      const encrypted = safeStorage.encryptString(plaintext)
+      return { data: encrypted.toString('base64') }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error) }
+    }
+  })
+
+  ipcMain.handle('safeStorage:decrypt', async (_, encryptedBase64: string) => {
+    try {
+      if (!safeStorage.isEncryptionAvailable()) {
+        return { error: 'Encryption is not available on this system' }
+      }
+      const decrypted = safeStorage.decryptString(Buffer.from(encryptedBase64, 'base64'))
+      return { data: decrypted }
+    } catch (error: unknown) {
+      return { error: getErrorMessage(error) }
     }
   })
 }
@@ -118,15 +158,16 @@ app.whenReady().then(async () => {
   initializeWeChatExecutor()
   registerWeChatHandlers()
   registerNotificationHandlers()
-  
+  registerSafeStorageHandlers()
+
   // 自动初始化 wechat-cli
   try {
     await wechatExecutor.init()
-    console.log('✅ wechat-cli 初始化成功')
-  } catch (error: any) {
-    console.error('❌ wechat-cli 初始化失败:', error.message)
+    console.log('wechat-cli initialized')
+  } catch (error: unknown) {
+    console.error('wechat-cli init failed:', getErrorMessage(error))
   }
-  
+
   createWindow()
 })
 
