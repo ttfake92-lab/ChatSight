@@ -31,8 +31,8 @@ interface ConfigState {
   monitoringConfig: MonitoringConfig
   updateAIConfig: (config: Partial<AIConfig>) => void
   setConfigured: (isConfigured: boolean) => void
-  loadConfig: () => void
-  saveConfig: () => void
+  loadConfig: () => Promise<void>
+  saveConfig: () => Promise<void>
   addKeyword: (keyword: Omit<KeywordConfig, 'id'>) => void
   removeKeyword: (id: string) => void
   updateKeyword: (id: string, updates: Partial<KeywordConfig>) => void

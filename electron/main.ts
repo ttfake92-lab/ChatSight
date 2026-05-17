@@ -9,33 +9,11 @@ declare const __dirname: string
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
 let wechatExecutor: WeChatExecutor
+let mainWindow: BrowserWindow | null = null
 
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    title: 'ChatSight',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
-      sandbox: false,
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-  })
-
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL)
-    win.webContents.openDevTools()
-  } else {
-    win.loadFile(path.join(__dirname, '../dist/index.html'))
-  }
-}
-
-function initializeWeChatExecutor() {
-  const commandPrefix = process.env.WECHAT_CLI_COMMAND || 'wechat-cli'
-  const timeout = parseInt(process.env.WECHAT_CLI_TIMEOUT || '30000')
-  wechatExecutor = new WeChatExecutor(commandPrefix, timeout)
-}
+type InitStatus = 'idle' | 'initializing' | 'ready' | 'error'
+let initStatus: InitStatus = 'idle'
+let initError: string | undefined = undefined
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -50,11 +28,31 @@ function getErrorCode(error: unknown): string | undefined {
 }
 
 function registerWeChatHandlers() {
+  ipcMain.handle('wechat:init-status', () => {
+    return { status: initStatus, error: initError }
+  })
+
   ipcMain.handle('wechat:init', async () => {
+    if (initStatus === 'initializing') {
+      return { error: 'Already initializing', code: 'ALREADY_INITIALIZING' }
+    }
+    if (initStatus === 'ready') {
+      return { data: true }
+    }
+    
+    initStatus = 'initializing'
+    initError = undefined
+    
     try {
-      return await wechatExecutor.init()
+      const result = await wechatExecutor.init()
+      initStatus = 'ready'
+      mainWindow?.webContents.send('wechat:init-status-changed', { status: 'ready' })
+      return result
     } catch (error: unknown) {
-      return { error: getErrorMessage(error), code: getErrorCode(error) }
+      initStatus = 'error'
+      initError = getErrorMessage(error)
+      mainWindow?.webContents.send('wechat:init-status-changed', { status: 'error', error: initError })
+      return { error: initError, code: getErrorCode(error) }
     }
   })
 
@@ -106,6 +104,37 @@ function registerWeChatHandlers() {
       return { error: getErrorMessage(error), code: getErrorCode(error) }
     }
   })
+}
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    title: 'ChatSight',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      sandbox: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  })
+
+  if (VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(VITE_DEV_SERVER_URL)
+    mainWindow.webContents.openDevTools()
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+}
+
+function initializeWeChatExecutor() {
+  const commandPrefix = process.env.WECHAT_CLI_COMMAND || 'wechat-cli'
+  const timeout = parseInt(process.env.WECHAT_CLI_TIMEOUT || '30000')
+  wechatExecutor = new WeChatExecutor(commandPrefix, timeout)
 }
 
 function registerNotificationHandlers() {
@@ -160,14 +189,6 @@ app.whenReady().then(async () => {
   registerWeChatHandlers()
   registerNotificationHandlers()
   registerSafeStorageHandlers()
-
-  // 自动初始化 wechat-cli
-  try {
-    await wechatExecutor.init()
-    console.log('wechat-cli initialized')
-  } catch (error: unknown) {
-    console.error('wechat-cli init failed:', getErrorMessage(error))
-  }
 
   createWindow()
 })

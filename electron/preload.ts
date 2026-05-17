@@ -6,6 +6,8 @@ interface NotificationAPI {
 
 interface WeChatAPI {
   init: () => Promise<any>
+  initStatus: () => Promise<{ status: string; error?: string }>
+  onInitStatusChanged: (callback: (data: { status: string; error?: string }) => void) => () => void
   getSessions: (limit?: number) => Promise<any>
   getHistory: (sessionName: string, limit?: number) => Promise<any>
   search: (keyword: string, sessionName?: string) => Promise<any>
@@ -30,6 +32,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   wechat: {
     init: () => ipcRenderer.invoke('wechat:init'),
+    initStatus: () => ipcRenderer.invoke('wechat:init-status'),
+    onInitStatusChanged: (callback: (data: { status: string; error?: string }) => void) => {
+      const handler = (_: Electron.IpcRendererEvent, data: { status: string; error?: string }) => callback(data)
+      ipcRenderer.on('wechat:init-status-changed', handler)
+      return () => ipcRenderer.removeListener('wechat:init-status-changed', handler)
+    },
     getSessions: (limit?: number) => ipcRenderer.invoke('wechat:sessions', limit),
     getHistory: (sessionName: string, limit?: number) => ipcRenderer.invoke('wechat:history', sessionName, limit),
     search: (keyword: string, sessionName?: string) => ipcRenderer.invoke('wechat:search', keyword, sessionName),

@@ -61,7 +61,9 @@ export interface NotificationAPI {
 }
 
 export interface WeChatAPI {
-  init: () => Promise<unknown>
+  init: () => Promise<{ error?: string; data?: unknown }>
+  initStatus: () => Promise<{ status: string; error?: string }>
+  onInitStatusChanged: (callback: (data: { status: string; error?: string }) => void) => () => void
   getSessions: (limit?: number) => Promise<unknown>
   getHistory: (sessionName: string, limit?: number) => Promise<unknown>
   search: (keyword: string, sessionName?: string) => Promise<unknown>
@@ -78,13 +80,13 @@ export interface SafeStorageAPI {
 export interface ElectronAPI {
   platform: string
   wechat: WeChatAPI
-  notification: NotificationAPI
-  safeStorage: SafeStorageAPI
+  notification?: NotificationAPI
+  safeStorage?: SafeStorageAPI
 }
 
 declare global {
   interface Window {
-    electronAPI: ElectronAPI
+    electronAPI?: ElectronAPI
   }
 }
 

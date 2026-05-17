@@ -35,7 +35,7 @@ export class NotificationService {
     }
 
     try {
-      await window.electronAPI!.notification.show(options)
+      await window.electronAPI!.notification!.show(options)
       return { success: true }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error'

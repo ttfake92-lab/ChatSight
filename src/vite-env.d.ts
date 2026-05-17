@@ -14,23 +14,3 @@ interface ImportMeta {
 }
 
 export {}
-
-declare global {
-  interface WeChatAPI {
-    init: () => Promise<unknown>
-    getSessions: (limit?: number) => Promise<unknown>
-    getHistory: (sessionName: string, limit?: number) => Promise<unknown>
-    search: (keyword: string, sessionName?: string) => Promise<unknown>
-    getStats: (sessionName?: string) => Promise<unknown>
-    getContacts: (query?: string) => Promise<unknown>
-  }
-
-  interface ElectronAPI {
-    platform: string
-    wechat: WeChatAPI
-  }
-
-  interface Window {
-    electronAPI: ElectronAPI
-  }
-}

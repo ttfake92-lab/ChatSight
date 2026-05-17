@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Sparkles,
   TrendingUp,
@@ -19,6 +19,8 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { useMessageStore } from '../stores/messageStore'
 import { useConfigStore } from '../stores/configStore'
+import { useSummaryStore } from '../stores/summaryStore'
+import { useSessionStore } from '../stores/sessionStore'
 import { aiService } from '../services/aiService'
 import { cn } from '../lib/utils'
 import type { AISummary, AIError } from '../types'
@@ -26,9 +28,26 @@ import type { AISummary, AIError } from '../types'
 export function AISummary() {
   const { messages } = useMessageStore()
   const { aiConfig } = useConfigStore()
+  const { selectedSession } = useSessionStore()
+  const { getSummary, saveSummary } = useSummaryStore()
+  
   const [summary, setSummary] = useState<AISummary | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (selectedSession) {
+      const stored = getSummary(selectedSession.id)
+      if (stored) {
+        setSummary(stored.summary)
+        setError(null)
+      } else {
+        setSummary(null)
+      }
+    } else {
+      setSummary(null)
+    }
+  }, [selectedSession, getSummary])
 
   useEffect(() => {
     return () => {
@@ -36,16 +55,15 @@ export function AISummary() {
     }
   }, [])
 
-  const handleGenerateSummary = async () => {
-    // 取消之前的请求
+  const handleGenerateSummary = useCallback(async () => {
+    if (!selectedSession) return
+    
     aiService.abortCurrent()
-    // 检查是否有消息
     if (messages.length === 0) {
       setError('没有可分析的聊天记录')
       return
     }
 
-    // 检查 AI 配置
     if (!aiConfig.apiKey || aiConfig.apiKey.trim() === '') {
       setError('请先配置 AI API Key：点击右上角设置按钮，填入你的 API Key')
       return
@@ -58,8 +76,8 @@ export function AISummary() {
       aiService.setConfig(aiConfig)
       const result = await aiService.generateSummary(messages)
       setSummary(result)
+      saveSummary(selectedSession.id, selectedSession.name, result)
     } catch (err) {
-      // 忽略用户主动取消的请求
       if (err instanceof Error && err.name === 'AbortError') {
         return
       }
@@ -67,7 +85,6 @@ export function AISummary() {
       const aiError = err as AIError
       const errorMessage = aiError.message || '生成摘要失败，请重试'
 
-      // 提供更友好的错误提示
       if (errorMessage.includes('API Key 无效') || errorMessage.includes('INVALID_KEY')) {
         setError('API Key 无效或已过期，请在设置中更新')
       } else if (errorMessage.includes('RATE_LIMIT')) {
@@ -80,7 +97,7 @@ export function AISummary() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [selectedSession, messages, aiConfig, saveSummary])
 
   const handleRetry = () => {
     handleGenerateSummary()
