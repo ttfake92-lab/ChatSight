@@ -10,7 +10,7 @@ interface InitState {
   retry: () => Promise<void>
 }
 
-export const useInitStore = create<InitState>((set) => ({
+export const useInitStore = create<InitState>((set, get) => ({
   status: 'idle',
   error: undefined,
 
@@ -23,8 +23,9 @@ export const useInitStore = create<InitState>((set) => ({
     }
     try {
       const result = await window.electronAPI.wechat.initStatus()
+      const newStatus = result.status as InitStatus
       set({ 
-        status: result.status as InitStatus, 
+        status: newStatus, 
         error: result.error 
       })
     } catch {
@@ -34,6 +35,9 @@ export const useInitStore = create<InitState>((set) => ({
 
   retry: async () => {
     if (!window.electronAPI?.wechat?.init) return
+    
+    const currentStatus = get().status
+    if (currentStatus === 'initializing' || currentStatus === 'ready') return
     
     set({ status: 'initializing', error: undefined })
     try {

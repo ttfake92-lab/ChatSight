@@ -16,15 +16,11 @@ let initStatus: InitStatus = 'idle'
 let initError: string | undefined = undefined
 
 function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
-
-function getErrorCode(error: unknown): string | undefined {
-  if (typeof error === 'object' && error !== null && 'code' in error) {
-    const code = (error as Record<string, unknown>).code
-    return code !== undefined ? String(code) : undefined
+  if (error instanceof Error) return error.message
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as { message: unknown }).message)
   }
-  return undefined
+  return String(error)
 }
 
 function registerWeChatHandlers() {
@@ -42,12 +38,13 @@ function registerWeChatHandlers() {
     
     initStatus = 'initializing'
     initError = undefined
+    mainWindow?.webContents.send('wechat:init-status-changed', { status: 'initializing' })
     
     try {
-      const result = await wechatExecutor.init()
+      await wechatExecutor.init()
       initStatus = 'ready'
       mainWindow?.webContents.send('wechat:init-status-changed', { status: 'ready' })
-      return result
+      return { data: true }
     } catch (error: unknown) {
       initStatus = 'error'
       initError = getErrorMessage(error)
@@ -129,6 +126,19 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  if (initStatus === 'idle') {
+    initStatus = 'initializing'
+    mainWindow?.webContents.send('wechat:init-status-changed', { status: 'initializing' })
+    wechatExecutor.init().then(() => {
+      initStatus = 'ready'
+      mainWindow?.webContents.send('wechat:init-status-changed', { status: 'ready' })
+    }).catch((error: unknown) => {
+      initStatus = 'error'
+      initError = getErrorMessage(error)
+      mainWindow?.webContents.send('wechat:init-status-changed', { status: 'error', error: initError })
+    })
+  }
 }
 
 function initializeWeChatExecutor() {

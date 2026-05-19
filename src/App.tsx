@@ -18,6 +18,7 @@ import { usePolling } from './contexts/PollingContext'
 import { SkillManager as SkillManagerService } from './services/skillManager'
 import { Sparkles, MessageSquare, Settings, RefreshCw } from 'lucide-react'
 import type { Message } from './types'
+import type { InitStatus } from './stores/initStore'
 
 function App() {
   const [showSettings, setShowSettings] = useState(false)
@@ -33,8 +34,17 @@ function App() {
   const { fetchHistory, messages, appendMessages } = useMessageStore()
   const { selectedSession } = useSessionStore()
   const { skills, loadSkills } = useSkillStore()
-  const { status: initStatus, error: initError, fetchStatus, retry } = useInitStore()
+  const { status: initStatus, error: initError, fetchStatus, setStatus, retry } = useInitStore()
   const { loadSummaries } = useSummaryStore()
+
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.wechat?.onInitStatusChanged((data) => {
+      setStatus(data.status as InitStatus, data.error)
+    })
+    return () => {
+      unsubscribe?.()
+    }
+  }, [setStatus])
 
   useEffect(() => {
     loadConfig()

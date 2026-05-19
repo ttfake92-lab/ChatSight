@@ -114,9 +114,18 @@ export class WeChatExecutor {
       const command = commandParts[0]
       const commandArgs = commandParts.slice(1).concat(args)
 
-      const process = spawn(command, commandArgs, {
+      const child = spawn(command, commandArgs, {
         shell: false,
-        windowsHide: true
+        windowsHide: true,
+        env: {
+          HOME: '/Users/tangtao',
+          USER: 'tangtao',
+          PATH: '/opt/homebrew/bin:/opt/homebrew/sbin:/Users/tangtao/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+          SHELL: '/bin/zsh',
+          LANG: 'en_US.UTF-8',
+          LANGUAGE: 'en_US.UTF-8',
+          LC_ALL: 'en_US.UTF-8',
+        }
       })
 
       let stdout = ''
@@ -126,14 +135,14 @@ export class WeChatExecutor {
 
       const cleanup = () => {
         if (timeoutId) clearTimeout(timeoutId)
-        process.removeAllListeners()
+        child.removeAllListeners()
       }
 
       const forceKill = () => {
         if (!killed) {
           killed = true
           try {
-            process.kill('SIGKILL')
+            child.kill('SIGKILL')
           } catch {
             // 进程可能已退出
           }
@@ -146,15 +155,15 @@ export class WeChatExecutor {
         reject(this.createError('TIMEOUT', `命令执行超时: ${this.commandPrefix} ${args.join(' ')}`))
       }, this.timeout)
 
-      process.stdout.on('data', (data) => {
+      child.stdout.on('data', (data) => {
         stdout += data.toString()
       })
 
-      process.stderr.on('data', (data) => {
+      child.stderr.on('data', (data) => {
         stderr += data.toString()
       })
 
-      process.on('close', (code) => {
+      child.on('close', (code) => {
         cleanup()
 
         if (code === 0) {
@@ -172,7 +181,7 @@ export class WeChatExecutor {
         }
       })
 
-      process.on('error', (error) => {
+      child.on('error', (error) => {
         cleanup()
         forceKill()
         reject(this.createError('EXECUTION_FAILED', `命令执行错误: ${error.message}`))
